@@ -2,11 +2,11 @@
 
 To better manage the onboarding of B2B users, Azure has introduced a feature allowing user self-service sign-up. This feature, currently in Preview, utilises 'User Flows' to formalise and automate a custom onboarding process.
 
-A User Flow is essentially a sequence of onboarding steps. Once these steps are satisifed, the external user is permitted into the tenant as a B2B user automatically. 
+A User Flow is essentially a sequence of onboarding steps. Once these steps are satisfied, the external user is permitted into the tenant as a B2B user automatically. 
 
 # Azure B2B Self-Service Sign-Up Steps
 
-A high-level overview of steps is outlined here:
+A high-level overview of these steps is outlined here:
 
 ![alt text](images/cdymond-azure-b2b-self-service-sign-up.png 'B2B Self-Service Sign-Up Flow')
 
@@ -14,14 +14,14 @@ A high-level overview of steps is outlined here:
 2. They choose to create an account at the login page.
 3. The 'After Sign-In' API connector receives their UPN suffix and basic information from their home tenant.
 4. If permitted by the API connector they are directed to the in-built B2B registration form.
-   - This form is composed of attributes as defined according to the user flow.
-5. At the registration form the user supplies additional data as requried by the user flow.
+   - This form is composed of attributes as defined by the user flow.
+5. At the registration form the user supplies additional data as required by the user flow.
 6. The 'Before Creation' API Connector then checks and validates this input.
 7. If successfully validated a B2B account is created in the tenant.
 
 # Guests
 
-Guests can enter a tenant in a number of ways depending upon the tenants collaboration settings. For instance, they may be invited via the Portal or Sharepoint etc.
+Guests can enter a tenant in a number of ways depending upon the tenant's collaboration settings. For instance, they may be invited via the Portal or SharePoint etc.
 
 To get an overview of all the existing B2B accounts in your tenant run the cmdlet outlined below.
 
@@ -84,12 +84,12 @@ $signInLogs = Get-AzureADAuditSignInLogs -Filter "userId eq '<objectId>'"
 
 Where **objectId** is the target user's objectId.
 
-**Note** - There is a 30 day history limit for Azure AD Premium P1/P2
+**Note** - There is a 30-day history limit for Azure AD Premium P1/P2
 (extension to this is possible through the use of a storage account)
 
 # Extension Attributes
 
-AD extension attributes include both custom B2B attributes defined for the User Flow and others added to your tenants schema.
+AD extension attributes include both custom B2B attributes defined for the User Flow and others added to your tenant's schema.
 
 ## Get All
 
