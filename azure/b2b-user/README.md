@@ -1,24 +1,29 @@
 # Introduction
 
-To better manage the onboarding of B2B users, Azure has recently introduced a feature allowing self-service sign-up. This feature, currently in Preview, utilises 'user flows' to define the onboarding process.
+To better manage the onboarding of B2B users, Azure has introduced a feature allowing user self-service sign-up. This feature, currently in Preview, utilises 'User Flows' to formalise and automate a custom onboarding process.
 
-A user flow is sequence of onboarding steps at the end of which a B2B account is created in the target tenant.
+A User Flow is sequence of onboarding steps. Once thes steps are satisifed the external user is permitted into the tenant as a B2B user automatically. 
 
 # Azure B2B Self-Service Sign-Up Steps
 
+A high-level overviw of the sequence of steps is outlined here:
+
 ![alt text](images/cdymond-azure-b2b-self-service-sign-up.png 'B2B Self-Service Sign-Up Flow')
 
-The sequence of steps as outlined are:
-
-1. An External User accessing a Self-Registration Application that permits self-service sign-up.
-2. They choose to create an account when presented at the login page.
-3. The 'After Sign-In' API connector receives their UPN suffix and basic information.
-4. If permitted they are directed to the in-built B2B registration form.
-5. At the registration form additional data is provided by the user (as defined by selected attributes)
-6. The 'Before Creation' API Connector checks and validates the input.
-7. If successfully validated a resulting B2B account is created in the target tenant.
+1. An External User accesses a Self-Registration Application that permits self-service sign-up.
+2. They choose to create an account at the login page.
+3. The 'After Sign-In' API connector receives their UPN suffix and basic information from their home tenant.
+4. If permitted by the API connector they are directed to the in-built B2B registration form.
+   - This form is composed of attributes as defined according to the user flow.
+5. At the registration form the user supplies additional data as requried by the user flow.
+6. The 'Before Creation' API Connector then checks and validates this input.
+7. If successfully validated a B2B account is created in the tenant.
 
 # Guests
+
+Guests can enter a tenant in a number of ways depending upon the tenants collaboration settings. For instance, they may be invited via email invitation from the Portal or Sharepoint directly.
+
+To get an overview of all the existing B2B accounts run the cmdlet outlined below.
 
 ## Get All
 
@@ -26,7 +31,11 @@ The sequence of steps as outlined are:
 $users = Get-AzureADUser -Filter "userType eq 'Guest'" -All $true
 ```
 
+This will return an array of all the B2B User objects.
+
 ## Get Specific Attributes
+
+You may also find the following list of attributes useful in assessing your B2B users:
 
 - createdDateTime
 - objectId
@@ -61,25 +70,11 @@ $Users = Get-AzureADUser -Filter "userType eq 'Guest'" -All $true `
     givenName, surname, jobTitle
 ```
 
-**Note** - That in this example I have used a Select-Object statement and expanded an extension property.
-
-# Extension Attributes
-
-## Get All
-
-This will return all of Azure extension attributes in the schema. If you have created additional custom attributes for the user flow they will appear here together with any other customised attributes.
-
-```powershell
-Get-AzureADApplication | Get-AzureADApplicationExtensionProperty
-```
-
-**Note** - These will be presented in the form: extension**appId**_ExtensionPropertyName_
-
-Every tenant has an appId corresponding to an app registration that holds the extended schema.
+**Note** - That in this example I have used a Select-Object statement and expanded an extension property and included it in the resulting set.
 
 # Sign In Logs
 
-Sign-In Logs are useful for establishing a list of inactive accounts.
+As well as looking at the users themselves, sign-in logs can be a great way of establishing B2B user inactivity.
 
 ## Get For A Specific User
 
@@ -87,7 +82,21 @@ Sign-In Logs are useful for establishing a list of inactive accounts.
 $signInLogs = Get-AzureADAuditSignInLogs -Filter "userId eq '<objectId>'"
 ```
 
-Where **objectId** is the target user's objectId
+Where **objectId** is the target user's objectId.
 
 **Note** - There is a 30 day history limit for Azure AD Premium P1/P2
 (extension to this is possible through the use of a storage account)
+
+# Extension Attributes
+
+AD extension attributes include both custom B2B attributes defined for the User Flow and others added to your tenants schema.
+
+## Get All
+
+```powershell
+Get-AzureADApplication | Get-AzureADApplicationExtensionProperty
+```
+
+**Note** - These will be presented in the form: extension**appId**_ExtensionPropertyName_
+
+The **appId** corresponds to an app registration clientId that holds the extended schema. Every tenant will have its own clientId.
