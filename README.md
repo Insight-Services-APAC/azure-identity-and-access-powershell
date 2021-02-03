@@ -6,26 +6,16 @@ It will primarily focus upon code snippets and examples showcasing commonly requ
 
 @author Chris Dymond | Insight 2021
 
-# Contents
-
-## On-Premise AD
-
-- [User](on-premise/user/README.md)
-  - [Removing apostrophes and spacing](on-premise/user/README.md#ConvertTo-StringWithoutApostropheOrSpace)
-  - [Finding an available username](on-premise/user/README.md#New-Username)
-  - [Generating a complex password](on-premise/user/README.md#New-ComplexPassword)
-  - [Getting an available email address](on-premise/user/README.md#New-Mail)
-
-## Azure AD
-- [User](azure/user/README.md)
-  - [Creating a cloud user account](azure/user/README.md#creating-a-cloud-user-account)
-
-- Group (pending)
-
+# Azure AD
 - [B2B User Self Service Sign-Up](azure/b2b-user/README.md)
   - [Retrieving Extension Attributes](azure/b2b-user/README.md#extension-attributes)
   - [Getting B2B Accounts](azure/b2b-user/README.md#guests)
   - [Getting Sign-In Logs](azure/b2b-user/README.md#sign-in-logs)
+
+- [User](azure/user/README.md)
+  - [Creating a cloud user account](azure/user/README.md#creating-a-cloud-user-account)
+
+- Group (pending)
 
 - Licensing
   - [SKU friendly names](azure/licensing/README.md#licensing-sku-friendly-names)
@@ -38,3 +28,12 @@ It will primarily focus upon code snippets and examples showcasing commonly requ
 - Azure AD Connect cloud sync (pending)
 
 - Exchange Online - EXO (pending)
+
+# On-Premise AD
+
+- [User](on-premise/user/README.md)
+  - [Removing apostrophes and spacing](on-premise/user/README.md#ConvertTo-StringWithoutApostropheOrSpace)
+  - [Finding an available username](on-premise/user/README.md#New-Username)
+  - [Generating a complex password](on-premise/user/README.md#New-ComplexPassword)
+  - [Getting an available email address](on-premise/user/README.md#New-Mail)
+
