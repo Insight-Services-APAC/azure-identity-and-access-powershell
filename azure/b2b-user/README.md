@@ -1,58 +1,22 @@
 # Introduction
 
-This area intends to be a reference for the Azure B2B Self-Service Sign-Up User Flow. This, currently Preview feature, allows permitted Guests to onboard themselves into an Azure AD Tenant.
+To better manage the onboarding of B2B users, Azure has recently introduced a feature allowing self-service sign-up. This feature, currently in Preview, utilises 'user flows' to define the onboarding process.
+
+A user flow is sequence of onboarding steps at the end of which a B2B account is created in the target tenant.
 
 # Azure B2B Self-Service Sign-Up Steps
 
 ![alt text](images/cdymond-azure-b2b-self-service-sign-up.png 'B2B Self-Service Sign-Up Flow')
 
-The sequence of steps are outlined below:
+The sequence of steps as outlined are:
 
-1. An External User accesses a Self-Registration Application that permits self-service sign-up.
+1. An External User accessing a Self-Registration Application that permits self-service sign-up.
 2. They choose to create an account when presented at the login page.
-3. The 'After Sign-In' API connector checks their UPN suffix.
+3. The 'After Sign-In' API connector receives their UPN suffix and basic information.
 4. If permitted they are directed to the in-built B2B registration form.
-5. At the registration form additional data is provided by the user.
+5. At the registration form additional data is provided by the user (as defined by selected attributes)
 6. The 'Before Creation' API Connector checks and validates the input.
 7. If successfully validated a resulting B2B account is created in the target tenant.
-
-# B2B Cmdlets
-
-A series of PowerShell snippets I have found useful for managing B2B users.
-
-Note that these cmdlets are based upon the AzureADPreview PowerShell Module
-
-```powershell
-Install-Module AzureADPreview
-
-Import-Module AzureADPreview
-```
-
-[Retrieving Extension Attributes](#extension-attributes)
-
-[Retrieving Guest Accounts (B2B)](#guests)
-
-[Getting Sign-In Logs](#sign-in-logs)
-
-Where required, append the following to create an output csv:
-
-```powershell
-| Export-CsV -NoTypeInformation -Path "output.csv"
-```
-
-# Extension Attributes
-
-## Get All
-
-This will return all Azure extension attributes in the schema.
-
-```powershell
-Get-AzureADApplication | Get-AzureADApplicationExtensionProperty
-```
-
-**Note** - These will be presented in the form: extension**appId**_ExtensionPropertyName_
-
-Every tenant has an appId corresponding to an app registration that holds the extended schema.
 
 # Guests
 
@@ -69,13 +33,13 @@ $users = Get-AzureADUser -Filter "userType eq 'Guest'" -All $true
 - mail
 - creationType
 
-  **Note** - Invitation / SelfServiceSignup / Null
+  - **Note** - Invitation / SelfServiceSignup / Null
 
 - userState
 - userStateChangedOn
 - refreshTokensValidFromDateTime
 
-  **Note** - Not all token requests ask for refresh tokens, as such this cannot be relied upon soley for checking inactivity.
+  - **Note** - Not all token requests ask for refresh tokens, as such this cannot be relied upon soley for checking inactivity.
 
 - showInAddressList
 - userPrincipalName
@@ -85,14 +49,37 @@ $users = Get-AzureADUser -Filter "userType eq 'Guest'" -All $true
 - jobTitle
 
 ```powershell
-$users = Get-AzureADUser -Filter "userType eq 'Guest'" -All $true | Select-Object -Property @{N='CreatedDateTime';E={$_.ExtensionProperty["createdDateTime"]}},  objectId, mail, creationType, userState, userStateChangedOn, refreshTokensValidFromDateTime, showInAddressList, usageLocation, userPrincipalName, displayName, givenName, surname, jobTitle
+$Users = Get-AzureADUser -Filter "userType eq 'Guest'" -All $true `
+| Select-Object -Property @{
+    N = 'CreatedDateTime'; `
+    E = { $_.ExtensionProperty["createdDateTime"] }
+    }, `
+    objectId, mail, `
+    creationType, userState, userStateChangedOn, `
+    refreshTokensValidFromDateTime, showInAddressList, `
+    usageLocation, userPrincipalName, displayName, `
+    givenName, surname, jobTitle
 ```
 
-**Note** - That in this example I have used a select-object statement and expanded an extension property.
+**Note** - That in this example I have used a Select-Object statement and expanded an extension property.
+
+# Extension Attributes
+
+## Get All
+
+This will return all of Azure extension attributes in the schema. If you have created additional custom attributes for the user flow they will appear here together with any other customised attributes.
+
+```powershell
+Get-AzureADApplication | Get-AzureADApplicationExtensionProperty
+```
+
+**Note** - These will be presented in the form: extension**appId**_ExtensionPropertyName_
+
+Every tenant has an appId corresponding to an app registration that holds the extended schema.
 
 # Sign In Logs
 
-Sign-In Logs are useful for establishing a list of stale accounts.
+Sign-In Logs are useful for establishing a list of inactive accounts.
 
 ## Get For A Specific User
 
