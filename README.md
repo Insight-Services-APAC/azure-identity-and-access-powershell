@@ -20,6 +20,7 @@ Import-Module AzureADPreview
 
   - [Self Service Sign Up Steps](azure/b2b-user/README.md#self-service-sign-up-steps)
   - [Accounts | Get](azure/b2b-user/README.md#guests)
+  - [Domains | Get](azure/b2b-user/README.md#get-b2b-domains)
   - [Extension attributes | Get](azure/b2b-user/README.md#extension-attributes)
   - [Sign-in logs | Get](azure/b2b-user/README.md#sign-in-logs)
 
