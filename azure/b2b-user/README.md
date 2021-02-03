@@ -9,14 +9,14 @@ This area intends to be a reference for the Azure B2B Self-Service Sign-Up User 
 The sequence of steps are outlined below:
 
 1. An External User accesses a Self-Registration Application that permits self-service sign-up.
-2. They choose to create an account when prsented with the login windows.
-3. A 'After Sign-In' API connector checks their UPN suffix
-4. If permitted they are directed to the registration form.
+2. They choose to create an account when presented at the login page.
+3. The 'After Sign-In' API connector checks their UPN suffix.
+4. If permitted they are directed to the in-built B2B registration form.
 5. At the registration form additional data is provided by the user.
 6. The 'Before Creation' API Connector checks and validates the input.
 7. If successfully validated a resulting B2B account is created in the target tenant.
 
-# B2B Azure AD & Office 365 PowerShell Snippets
+# B2B Cmdlets
 
 A series of PowerShell snippets I have found useful for managing B2B users.
 
