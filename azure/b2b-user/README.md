@@ -72,6 +72,38 @@ $Users = Get-AzureADUser -Filter "userType eq 'Guest'" -All $true `
 
 **Note** - That in this example I have used a Select-Object statement and expanded an extension property and included it in the resulting set.
 
+## Get B2B Domains
+
+Retrive a list of B2B user domains currently in your tenant
+
+```powershell
+    <#
+    .SYNOPSIS
+        Retrieving a count of B2B user domains.
+
+        @Author: Chris Dymond | Insight 2021
+    .DESCRIPTION
+    #>
+using namespace System.Collections.Generic
+$Users = Get-AzureADUser -Filter "userType eq 'Guest'" -All $true
+[Dictionary[String, Int32]] $B2BDomains = [Dictionary[String, Int32]]::new()
+foreach ($User in $Users) {
+    # Mail is not always populated
+    # UPN will be used to ascertain the host tenant
+    # chris.dymond_something.com.au#EXT#@x.onmicrosoft.com
+    # chris_dymond_something.com.au#EXT#@x.onmicrosoft.com
+    $UserPrincipalName = $User.UserPrincipalName
+    $B2BDomain = ($UserPrincipalName.Split('#')[0].Split('_')[$UserPrincipalName.Split('#')[0].Split('_').Count - 1]).ToLower()
+    if ($null -eq $B2BDomains[$B2BDomain]) {
+        $B2BDomains.Add($B2BDomain, 1)
+        
+    } else {
+        $B2BDomains[$B2BDomain] = $B2BDomains[$B2BDomain] + 1
+    }
+}
+$B2BDomains.GetEnumerator() | Sort-Object | Export-CSV "B2B_Domains.csv" -NoTypeInformation
+```
+
 # Sign In Logs
 
 As well as looking at the users themselves, sign-in logs can be a great way of establishing B2B user inactivity.
