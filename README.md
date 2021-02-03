@@ -17,3 +17,18 @@ It will primarily focus upon code snippets and examples showcasing commonly requ
   - [Getting an available email address](on-premise/user/README.md#New-Mail)
 
 ## Azure AD
+
+- User (pending)
+
+- Group (pending)
+
+- [B2B User Self Service Sign-Up](azure/b2b-user/README.md)
+  - [Retrieving Extension Attributes](azure/b2b-user/README.md#extension-attributes)
+  - [Getting B2B Accounts](azure/b2b-user/README.md#guests)
+  - [Getting Sign-In Logs](azure/b2b-user/README.md#sign-in-logs)
+
+- Licensing (pending)
+
+- Tenant Consolidation (pending)
+
+## Exchange Online - EXO (pending)
