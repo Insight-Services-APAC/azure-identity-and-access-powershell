@@ -8,11 +8,12 @@ It will primarily focus upon code snippets showcasing common queries for both Az
 
 # Azure AD
 
-- [B2B User Self Service Sign-Up Overview](azure/b2b-user/README.md)
+- [B2B](azure/b2b-user/README.md)
 
-  - [B2B accounts | Get](azure/b2b-user/README.md#guests)
-  - [B2B extension attributes | Get](azure/b2b-user/README.md#extension-attributes)
-  - [B2B sign-in logs | Get](azure/b2b-user/README.md#sign-in-logs)
+  - [Self Service Sign Up Steps](azure/b2b-user/README.md#self-service-sign-up-steps)
+  - [Accounts | Get](azure/b2b-user/README.md#guests)
+  - [Extension attributes | Get](azure/b2b-user/README.md#extension-attributes)
+  - [Sign-in logs | Get](azure/b2b-user/README.md#sign-in-logs)
 
 - [User](azure/user/README.md)
 
