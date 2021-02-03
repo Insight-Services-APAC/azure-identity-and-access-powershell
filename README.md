@@ -4,6 +4,14 @@ This repository intends to be a technical reference for managing aspects of Azur
 
 It will primarily focus upon code snippets showcasing common queries for both Azure and On-Premise AD.
 
+Note that many of these cmdlets are based upon the AzureADPreview PowerShell Module
+
+```powershell
+Install-Module AzureADPreview
+
+Import-Module AzureADPreview
+```
+
 @author Chris Dymond | Insight 2021
 
 # Azure AD
