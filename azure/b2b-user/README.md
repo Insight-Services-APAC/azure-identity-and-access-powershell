@@ -4,7 +4,7 @@ To better manage the onboarding of B2B users, Azure has introduced a feature all
 
 A User Flow is essentially a sequence of onboarding steps. Once these steps are satisfied, the external user is permitted into the tenant as a B2B user automatically. 
 
-# Azure B2B Self-Service Sign-Up Steps
+# Self Service Sign Up Steps
 
 A high-level overview of these steps is outlined here:
 
