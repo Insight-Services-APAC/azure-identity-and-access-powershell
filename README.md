@@ -27,7 +27,8 @@ It will primarily focus upon code snippets and examples showcasing commonly requ
   - [Getting B2B Accounts](azure/b2b-user/README.md#guests)
   - [Getting Sign-In Logs](azure/b2b-user/README.md#sign-in-logs)
 
-- Licensing (pending)
+- Licensing
+  - [SKU friendly names](azure/licensing/README.md#licensing-sku-friendly-names)
 
 - Tenant Consolidation (pending)
 
