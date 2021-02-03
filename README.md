@@ -18,7 +18,8 @@ It will primarily focus upon code snippets and examples showcasing commonly requ
 
 ## Azure AD
 
-- User (pending)
+- [User](azure/user/README.md)
+  - [Creating a cloud user account](azure/user/README.md#creating-a-cloud-user-account)
 
 - Group (pending)
 
