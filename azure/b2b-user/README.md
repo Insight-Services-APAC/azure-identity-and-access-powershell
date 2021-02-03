@@ -2,11 +2,11 @@
 
 To better manage the onboarding of B2B users, Azure has introduced a feature allowing user self-service sign-up. This feature, currently in Preview, utilises 'User Flows' to formalise and automate a custom onboarding process.
 
-A User Flow is sequence of onboarding steps. Once thes steps are satisifed the external user is permitted into the tenant as a B2B user automatically. 
+A User Flow is essentially a sequence of onboarding steps. Once these steps are satisifed, the external user is permitted into the tenant as a B2B user automatically. 
 
 # Azure B2B Self-Service Sign-Up Steps
 
-A high-level overviw of the sequence of steps is outlined here:
+A high-level overview of steps is outlined here:
 
 ![alt text](images/cdymond-azure-b2b-self-service-sign-up.png 'B2B Self-Service Sign-Up Flow')
 
@@ -21,9 +21,9 @@ A high-level overviw of the sequence of steps is outlined here:
 
 # Guests
 
-Guests can enter a tenant in a number of ways depending upon the tenants collaboration settings. For instance, they may be invited via email invitation from the Portal or Sharepoint directly.
+Guests can enter a tenant in a number of ways depending upon the tenants collaboration settings. For instance, they may be invited via the Portal or Sharepoint etc.
 
-To get an overview of all the existing B2B accounts run the cmdlet outlined below.
+To get an overview of all the existing B2B accounts in your tenant run the cmdlet outlined below.
 
 ## Get All
 
