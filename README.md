@@ -10,9 +10,9 @@ It will primarily focus upon code snippets showcasing common queries for both Az
 
 - [B2B User Self Service Sign-Up Overview](azure/b2b-user/README.md)
 
-  - [B2B accounts | View](azure/b2b-user/README.md#guests)
-  - [B2B extension attributes | View](azure/b2b-user/README.md#extension-attributes)
-  - [B2B sign-in logs | View](azure/b2b-user/README.md#sign-in-logs)
+  - [B2B accounts | Get](azure/b2b-user/README.md#guests)
+  - [B2B extension attributes | Get](azure/b2b-user/README.md#extension-attributes)
+  - [B2B sign-in logs | Get](azure/b2b-user/README.md#sign-in-logs)
 
 - [User](azure/user/README.md)
 
@@ -37,7 +37,7 @@ It will primarily focus upon code snippets showcasing common queries for both Az
 # On-Premise AD
 
 - [User](on-premise/user/README.md)
-  - [Remove apostrophes and spacing | Edit](on-premise/user/README.md#ConvertTo-StringWithoutApostropheOrSpace)
+  - [Sanitised String | ConvertTo](on-premise/user/README.md#ConvertTo-StringWithoutApostropheOrSpace)
   - [Username | New](on-premise/user/README.md#New-Username)
   - [Complex password | New](on-premise/user/README.md#New-ComplexPassword)
   - [Email address | New ](on-premise/user/README.md#New-Mail)
