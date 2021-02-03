@@ -17,7 +17,6 @@ It will primarily focus upon code snippets and examples showcasing commonly requ
   - [Getting an available email address](on-premise/user/README.md#New-Mail)
 
 ## Azure AD
-
 - [User](azure/user/README.md)
   - [Creating a cloud user account](azure/user/README.md#creating-a-cloud-user-account)
 
@@ -33,4 +32,9 @@ It will primarily focus upon code snippets and examples showcasing commonly requ
 
 - Tenant Consolidation (pending)
 
-## Exchange Online - EXO (pending)
+- [Azure AD Connect](azure/adc/README.md) (in progress)
+  - Immutable Ids and Consistency Guids
+
+- Azure AD Connect cloud sync (pending)
+
+- Exchange Online - EXO (pending)
