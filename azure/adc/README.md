@@ -4,7 +4,7 @@
 Retrieving the ImmutableId of a cloud user.
 
 ```powershell
-$ImmutableID = Get-AzureADUser -UserPrincipalName $Upn | Select-Object -ExpandProperty ImmutableId
+$ImmutableID = Get-AzureADUser -ObjectId $Upn | Select-Object -ExpandProperty ImmutableId
 ```
 
 ## Converting an ImmutableId to a ConsistencyGuid
