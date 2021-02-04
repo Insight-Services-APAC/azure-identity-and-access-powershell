@@ -111,7 +111,31 @@ As well as looking at the users themselves, sign-in logs can be a great way of e
 ## Get For A Specific User
 
 ```powershell
-$signInLogs = Get-AzureADAuditSignInLogs -Filter "userId eq '<objectId>'"
+function Get-LastSignInByUserPrincipalName {
+    <#
+    .SYNOPSIS
+        Get the last successful login date of an Azure user.
+        This will be returned in local time.
+        @Author: Chris Dymond | Insight 2021
+    .DESCRIPTION
+    #>
+    [CmdletBinding()]
+    [OutputType([DateTime])]
+    param
+    (
+        [Parameter(
+            Mandatory = $true,
+            ValueFromPipelineByPropertyName = $true,
+            Position = 0)]
+        [String] $UserPrincipalName
+    )
+    process {
+        # This code returns only the last successful event.
+        $LastSignIn = Get-AzureADAuditSignInLogs -Filter "userPrincipalName eq '$UserPrincipalName'" `
+         | Where-Object {$_.Status.ErrorCode -eq 0} | Select-Object -First 1
+        [DateTime]::ParseExact($LastSignIn.CreatedDateTime, "yyyy-MM-ddTHH:mm:ssZ", $null)
+    }
+}
 ```
 
 Where **objectId** is the target user's objectId.
