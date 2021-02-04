@@ -19,9 +19,9 @@ Import-Module AzureADPreview
 
 - [B2B](azure/b2b-user/README.md)
 
-  - [Self Service Sign Up | Feature Overview](azure/b2b-user/README.md)
+  - [Self service sign up | Feature Overview](azure/b2b-user/README.md)
   - [Accounts | Get](azure/b2b-user/README.md#guests)
-  - [Domains | Get](azure/b2b-user/README.md#get-b2b-domains)
+  - [Partner domains in your tenant | Get](azure/b2b-user/README.md#get-b2b-domains)
   - [Extension attributes | Get](azure/b2b-user/README.md#extension-attributes)
   - [Last Sign-In | Get](azure/b2b-user/README.md#last-sign-in)
 
