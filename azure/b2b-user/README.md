@@ -138,10 +138,7 @@ function Get-LastSignInByUserPrincipalName {
 }
 ```
 
-Where **objectId** is the target user's objectId.
-
 **Note** - There is a 30-day history limit for Azure AD Premium P1/P2
-(extension to this is possible through the use of a storage account)
 
 # Extension Attributes
 
