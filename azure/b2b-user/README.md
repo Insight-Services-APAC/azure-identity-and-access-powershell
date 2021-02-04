@@ -1,7 +1,7 @@
 # Introduction
 TBC
 
-# Self Service Sign Up Steps
+# Self Service Sign Up | Feature Overview
 
 To better manage the onboarding of B2B users, Azure has introduced a feature allowing user self-service sign-up. This feature, currently in Preview, utilises 'User Flows' to formalise and automate a custom onboarding process.
 
