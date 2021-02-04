@@ -105,9 +105,9 @@ foreach ($User in $Users) {
 $B2BDomains.GetEnumerator() | Sort-Object | Export-CSV "B2B_Domains.csv" -NoTypeInformation
 ```
 
-# Sign In Logs
+# Last Sign In
 
-As well as looking at the users themselves, sign-in logs can be a great way of establishing B2B user inactivity.
+Retrive the last sign-in datetime.
 
 ## Get For A Specific User
 
@@ -119,6 +119,7 @@ function Get-LastSignInByUserPrincipalName {
         This will be returned in local time.
         @Author: Chris Dymond | Insight 2021
     .DESCRIPTION
+        
     #>
     [CmdletBinding()]
     [OutputType([DateTime])]
@@ -131,15 +132,16 @@ function Get-LastSignInByUserPrincipalName {
         [String] $UserPrincipalName
     )
     process {
+        # Results are returned in order of most recent activity
         # This code returns only the last successful event.
-        $LastSignIn = Get-AzureADAuditSignInLogs -Filter "userPrincipalName eq '$UserPrincipalName'" `
-         | Where-Object {$_.Status.ErrorCode -eq 0} | Select-Object -First 1
+        $Filter = "userPrincipalName eq '$UserPrincipalName' and status/errorCode eq 0"
+        $LastSignIn = Get-AzureADAuditSignInLogs -Filter $Filter| Select-Object -First 1
         [DateTime]::ParseExact($LastSignIn.CreatedDateTime, "yyyy-MM-ddTHH:mm:ssZ", $null)
     }
 }
 ```
 
-**Note** - There is a 30-day history limit for Azure AD Premium P1/P2
+**Note** - There is a 30-day sign-in history limit for Azure AD Premium P1/P2
 
 # Extension Attributes
 
