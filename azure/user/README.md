@@ -22,6 +22,58 @@ $NewAzureADUserParams = @{
 New-AzureADUser @NewAzureADUserParams
 ```
 
+# New-ComplexPassword
+
+```powershell
+function New-ComplexPassword {
+    <#
+    .SYNOPSIS
+        Complex password generation
+
+        @Author: Chris Dymond | Insight 2021
+    .DESCRIPTION
+        Returns a a complex password containing:
+            Lower case letters
+            Upper case letters
+            Numbers
+            Special characters
+    #>
+    [CmdletBinding()]
+    [OutputType([String])]
+    param
+    (
+        [Parameter(
+            Mandatory = $true,
+            ValueFromPipelineByPropertyName = $true,
+            Position = 0)]
+        [ValidateNotNull()]
+        [Int]
+        $PasswordLength,
+
+        # A validation is done here otherwise it may never meet the criteria for upper,lower etc
+        [Parameter(
+            Mandatory = $true,
+            ValueFromPipelineByPropertyName = $true,
+            Position = 1)]
+        [ValidateScript( { $_ -lt $PasswordLength - 2 })]
+        [Int]
+        $NumNonAlphaChars
+    )
+    process {
+        # Using the .NET supplied method with customisations.
+        Add-Type -AssemblyName 'System.Web'
+        $ValidPassword = $false
+        do {
+            $GeneratedPassword = [System.Web.Security.Membership]::GeneratePassword($PasswordLength, $NumNonAlphaChars)
+            If ($GeneratedPassword -cmatch "(?=.*\d)(?=.*[a-z])(?=.*[A-Z])") {
+                $ValidPassword = $True
+            }
+        } While ($ValidPassword -eq $false)
+        $GeneratedPassword
+    }
+}
+```
+
 # Last Sign In
 
 Retrive the last sign-in datetime.
