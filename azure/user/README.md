@@ -36,6 +36,7 @@ function Get-LastSignInByUserPrincipalName {
         This will be returned in local time.
         @Author: Chris Dymond | Insight 2021
     .DESCRIPTION
+        
     #>
     [CmdletBinding()]
     [OutputType([DateTime])]
@@ -48,9 +49,10 @@ function Get-LastSignInByUserPrincipalName {
         [String] $UserPrincipalName
     )
     process {
+        # Results are returned in order of most recent activity
         # This code returns only the last successful event.
-        $LastSignIn = Get-AzureADAuditSignInLogs -Filter "userPrincipalName eq '$UserPrincipalName'" `
-         | Where-Object {$_.Status.ErrorCode -eq 0} | Select-Object -First 1
+        $Filter = "userPrincipalName eq '$UserPrincipalName' and status/errorCode eq 0"
+        $LastSignIn = Get-AzureADAuditSignInLogs -Filter $Filter| Select-Object -First 1
         [DateTime]::ParseExact($LastSignIn.CreatedDateTime, "yyyy-MM-ddTHH:mm:ssZ", $null)
     }
 }
