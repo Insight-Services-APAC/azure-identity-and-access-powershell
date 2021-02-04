@@ -28,6 +28,7 @@ Import-Module AzureADPreview
 - [User](azure/user/README.md)
 
   - [Account | New](azure/user/README.md#creating-a-cloud-user-account)
+  - [Complex password | New](azure/user/README.md#New-ComplexPassword)
   - [Last Sign-In | Get](azure/user/README.md#last-sign-in)
 
 - Group (pending)
