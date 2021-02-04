@@ -1,6 +1,5 @@
 # Introduction
-
-
+TBC
 
 # Self Service Sign Up Steps
 
@@ -79,13 +78,13 @@ $Users = Get-AzureADUser -Filter "userType eq 'Guest'" -All $true `
 Retrive a list of B2B user domains currently in your tenant
 
 ```powershell
-    <#
-    .SYNOPSIS
-        Retrieving a count of B2B user domains.
+<#
+.SYNOPSIS
+   Retrieving a count of B2B user domains.
 
-        @Author: Chris Dymond | Insight 2021
-    .DESCRIPTION
-    #>
+   @Author: Chris Dymond | Insight 2021
+.DESCRIPTION
+#>
 using namespace System.Collections.Generic
 $Users = Get-AzureADUser -Filter "userType eq 'Guest'" -All $true
 [Dictionary[String, Int32]] $B2BDomains = [Dictionary[String, Int32]]::new()
