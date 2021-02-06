@@ -2,40 +2,36 @@
 
 This area intends to be a reference for assessing O365 licensing.
 
-# Licensing SKU Friendly Names
+License type applied checks [inherited vs direct assignment] (pending)
 
-A large list of licensing SKUs and their friendly names.
-I have compiled these from Microsoft Docs and licensing (as discovered).
+# Get Tenant Licensing Details
 
-**Note** - These are being added all the time and will be updated as new SKU's are identified.
+Includes friendly names. I have compiled these from Microsoft Docs and licensing (as discovered).
 
 ```powershell
-function Get-SkuIdFriendlyName {
+function Get-TenantLicensingDetails {
     <#
     .SYNOPSIS
-        A list of SkuId's and their respective friendly names stored as
-        a dictionary object for quick retrieval.
-
-        The dictionary should be built in a seperate script or module rather than being
-        rebuilt each call.
+        Returns licensing details and their friendly names.
 
         @Author: Chris Dymond | Insight 2021
     .DESCRIPTION
-        Returns the Portal text value
+
     #>
     [CmdletBinding()]
-    [OutputType([String])]
+    [OutputType([Object[]])]
     param
     (
-        [Parameter(
-            Mandatory = $true,
-            ValueFromPipelineByPropertyName = $true,
-            Position = 0)]
-        [ValidateNotNullOrEmpty()]
-        [String]
-        $SkuId
     )
     process {
+        $Licenses = Get-AzureADSubscribedSku | Select-Object -Property Sku*, `
+        @{N = 'SkuFriendlyName'; E = { '' } }, `
+        @{N = 'Total'; E = { $_.PrepaidUnits.'Enabled' } }, `
+        @{N = 'Assigned'; E = { $_.ConsumedUnits } }, `
+        @{N = 'Available'; E = { $_.PrepaidUnits.'Enabled' - $_.ConsumedUnits } }, `
+        @{N = 'Suspended'; E = { $_.PrepaidUnits.'Suspended' } }, `
+        @{N = 'Warning'; E = { $_.PrepaidUnits.'Warning' } }
+
         $SkuFriendlyNames = [System.Collections.Generic.Dictionary[string, string]]::new()
         $SkuFriendlyNames.Add('0c266dff-15dd-4b49-8397-2bb16070ed52', 'Audio Conferencing')
         $SkuFriendlyNames.Add('2b9c8e7c-319c-43a2-a2a0-48c5c6161de7', 'Azure Active Directory Basic')
@@ -137,12 +133,17 @@ function Get-SkuIdFriendlyName {
         $SkuFriendlyNames.Add('710779e8-3d4a-4c88-adb9-386c958d1fdf', 'Microsoft Teams Exploratory')
         $SkuFriendlyNames.Add('3dd6cf57-d688-4eed-ba52-9e40b5468c3e', 'Microsoft Defender for Office 365 (Plan 2)')
 
-        $SkuFriendlyName = $null
-        if ($SkuFriendlyNames.TryGetValue($SkuId, [ref] $SkuFriendlyName) -eq $false) {
-            throw "Unknown SkuId: $SkuId"
+        foreach ($License in $Licenses) {
+            $SkuFriendlyName = $null
+            if ($SkuFriendlyNames.TryGetValue($License.SkuId, [ref] $SkuFriendlyName) -eq $false) {
+                Write-Debug "Unknown SkuId: $SkuId"
+            }
+            else {
+                $License.SkuFriendlyName = $SkuFriendlyName
+            }
         }
-        $SkuFriendlyName
 
+        $Licenses
     }
 }
 ```
