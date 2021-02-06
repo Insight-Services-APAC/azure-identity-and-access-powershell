@@ -35,7 +35,7 @@ Import-Module AzureADPreview
 
 - Licensing
 
-  - [SKU friendly names](azure/licensing/README.md#licensing-sku-friendly-names)
+  - [Tenant licenses | Get](azure/licensing/README.md#get-tenant-licensing-details)
 
 - Tenant Consolidation (pending)
 
