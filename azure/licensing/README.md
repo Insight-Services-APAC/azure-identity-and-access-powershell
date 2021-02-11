@@ -14,7 +14,7 @@ function Get-TenantLicensingDetails {
     .SYNOPSIS
         Returns licensing details and their friendly names.
 
-        @Author: Chris Dymond | Insight 2021
+        @Author: Chris Dymond
     .DESCRIPTION
 
     #>
