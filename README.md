@@ -51,7 +51,11 @@ Import-Module AzureADPreview
 
 - Exchange Online - EXO (pending)
 
+- Conditional Access (pending)
+
 # On-Premise AD
+
+- Discovery (pending)
 
 - [User](on-premise/user/README.md)
   - [Sanitised String | ConvertTo](on-premise/user/README.md#ConvertTo-StringWithoutApostropheOrSpace)
