@@ -41,7 +41,11 @@ Import-Module AzureADPreview
 
 - [Azure AD Connect](azure/adc/README.md) (in progress)
 
-  - Immutable Ids and Consistency Guids
+  - [Retrieving the ImmutableId of a cloud user](azure/adc/README.md#Retrieving-the-ImmutableId-of-a-cloud-user)
+  - [Converting the ImmutableId to a ConsistencyGuid](azure/adc/README.md#Converting-the-ImmutableId-to-a-ConsistencyGuid)
+  - [Setting the ImmutableId to the ConsistencyGuid](azure/adc/README.md#Setting-the-ImmutableId-to-the-ConsistencyGuid)
+  - [Converting the ConsistencyGuid to a ImmutableId](azure/adc/README.md#Converting-the-ConsistencyGuid-to-a-ImmutableId)
+  - [Converting the ImmutableId to a DN](azure/adc/README.md#Converting-the-ImmutableId-to-a-DN)
 
 - Azure AD Connect cloud sync (pending)
 
