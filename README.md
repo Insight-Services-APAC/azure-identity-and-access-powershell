@@ -42,11 +42,11 @@ Import-Module AzureADPreview
 - [Azure AD Connect](azure/adc/README.md) (in progress)
   
     **Working with Anchors**
-  - [Retrieving the ImmutableId of a cloud user](azure/adc/README.md#Retrieving-the-ImmutableId-of-a-cloud-user)
-  - [Converting the ImmutableId to a ConsistencyGuid](azure/adc/README.md#Converting-the-ImmutableId-to-a-ConsistencyGuid)
-  - [Setting the ImmutableId to the ConsistencyGuid](azure/adc/README.md#Setting-the-ImmutableId-to-the-ConsistencyGuid)
-  - [Converting the ConsistencyGuid to a ImmutableId](azure/adc/README.md#Converting-the-ConsistencyGuid-to-a-ImmutableId)
-  - [Converting the ImmutableId to a DN](azure/adc/README.md#Converting-the-ImmutableId-to-a-DN)
+  - [Retrieving the ImmutableId of a cloud user](azure/adc#Retrieving-the-ImmutableId-of-a-cloud-user)
+  - [Converting the ImmutableId to a ConsistencyGuid](azure/adc#Converting-the-ImmutableId-to-a-ConsistencyGuid)
+  - [Setting the ImmutableId to the ConsistencyGuid](azure/adc#Setting-the-ImmutableId-to-the-ConsistencyGuid)
+  - [Converting the ConsistencyGuid to a ImmutableId](azure/adc#Converting-the-ConsistencyGuid-to-a-ImmutableId)
+  - [Converting the ImmutableId to a DN](azure/adc#Converting-the-ImmutableId-to-a-DN)
 
 - Azure AD Connect cloud sync (pending)
 
