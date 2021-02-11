@@ -82,7 +82,7 @@ Retrive a list of B2B user domains currently in your tenant
 .SYNOPSIS
    Retrieving a count of B2B user domains.
 
-   @Author: Chris Dymond | Insight 2021
+   @Author: Chris Dymond
 .DESCRIPTION
 #>
 using namespace System.Collections.Generic
@@ -117,7 +117,7 @@ function Get-LastSignInByUserPrincipalName {
     .SYNOPSIS
         Get the last successful login date of an Azure user.
         This will be returned in local time.
-        @Author: Chris Dymond | Insight 2021
+        @Author: Chris Dymond
     .DESCRIPTION
         
     #>
