@@ -1,6 +1,6 @@
 # Azure Active Directory Connect
 
-## Retrieving the Immutable ID of a cloud user.
+## Retrieving the Immutable ID of a cloud user
 Retrieving the ImmutableId of a cloud user.
 
 ```powershell
