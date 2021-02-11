@@ -16,7 +16,7 @@ function ConvertTo-StringWithoutApostropheOrSpace {
     .SYNOPSIS
         Removal of apostrophe character and empty space
 
-        @Author: Chris Dymond | Insight 2021
+        @Author: Chris Dymond
     .DESCRIPTION
         Removes apostrophe "'" and empty space " "
     #>
@@ -44,7 +44,7 @@ function New-Username {
     .SYNOPSIS
         Get an available username (sAMAccountName) from Firstname and Surname values.
 
-        @Author: Chris Dymond | Insight 2021
+        @Author: Chris Dymond
     .DESCRIPTION
         Uses the first initial of the firstname concatenated with the last name up to 20 chars.
         Uniqueness is given by appending a digit.
@@ -97,7 +97,7 @@ function New-ComplexPassword {
     .SYNOPSIS
         Complex password generation
 
-        @Author: Chris Dymond | Insight 2021
+        @Author: Chris Dymond
     .DESCRIPTION
         Returns a a complex password containing:
             Lower case letters
@@ -151,7 +151,7 @@ function New-Mail {
 
         The suffix parameter must include '@'
 
-        @Author: Chris Dymond | Insight 2021
+        @Author: Chris Dymond
     .DESCRIPTION
         Uniqueness is given by appending a digit.
     #>
