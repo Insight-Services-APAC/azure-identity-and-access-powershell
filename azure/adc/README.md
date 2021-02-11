@@ -7,7 +7,7 @@ Retrieving the ImmutableId of a cloud user.
 $ImmutableID = Get-AzureADUser -ObjectId $Upn | Select-Object -ExpandProperty ImmutableId
 ```
 
-## Converting an ImmutableId to a ConsistencyGuid
+## Converting the ImmutableId to a ConsistencyGuid
 ```powershell
 function ConvertFrom-ImmutableIdToConsistencyGuid {
     <#
@@ -35,12 +35,12 @@ function ConvertFrom-ImmutableIdToConsistencyGuid {
 }
 ```
 
-## Setting the ImmutableId to the on-premise ConsistencyGuid
+## Setting the ImmutableId to the MSConsistencyGuid
 ```powershell
 Set-ADUser –UserPrincipalName $Upn -Replace @{'mS-DS-ConsistencyGuid' = [GUID]$ConsistencyGuid }
 ```
 
-## Converting a ConsistencyGuid to a ImmutableId
+## Converting the ConsistencyGuid to a ImmutableId
 ```powershell
 function ConvertFrom-ConsistencyGuidToImmutableId {
     <#
@@ -68,7 +68,7 @@ function ConvertFrom-ConsistencyGuidToImmutableId {
 }
 ```
 
-## Converting a ImmutableId to a DN
+## Converting the ImmutableId to a DN
 ```powershell
     function ConvertFrom-ImmutableIdToDn {
       <#
