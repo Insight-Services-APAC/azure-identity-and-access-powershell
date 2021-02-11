@@ -2,9 +2,9 @@
 
 This repository intends to be a technical reference for managing aspects of Azure’s Identity and Access Management via PowerShell.
 
-It will primarily focus upon code snippets showcasing common queries for both Azure and On-Premise AD.
+It will primarily be a showcase for common PowerShell queries for both Azure and On-Premise AD with some functions grouped into modules where applicable.
 
-@author Chris Dymond | Insight 2021
+@author Chris Dymond chris.dymond@insight.com
 
 ## Prerequisites
 
