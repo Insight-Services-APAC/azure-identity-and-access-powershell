@@ -40,7 +40,8 @@ Import-Module AzureADPreview
 - Tenant Consolidation (pending)
 
 - [Azure AD Connect](azure/adc/README.md) (in progress)
-
+  
+    **Working with Anchors**
   - [Retrieving the ImmutableId of a cloud user](azure/adc/README.md#Retrieving-the-ImmutableId-of-a-cloud-user)
   - [Converting the ImmutableId to a ConsistencyGuid](azure/adc/README.md#Converting-the-ImmutableId-to-a-ConsistencyGuid)
   - [Setting the ImmutableId to the ConsistencyGuid](azure/adc/README.md#Setting-the-ImmutableId-to-the-ConsistencyGuid)
