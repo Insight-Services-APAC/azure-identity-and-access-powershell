@@ -30,7 +30,7 @@ function New-ComplexPassword {
     .SYNOPSIS
         Complex password generation
 
-        @Author: Chris Dymond | Insight 2021
+        @Author: Chris Dymond
     .DESCRIPTION
         Returns a a complex password containing:
             Lower case letters
@@ -86,7 +86,7 @@ function Get-LastSignInByUserPrincipalName {
     .SYNOPSIS
         Get the last successful login date of an Azure user.
         This will be returned in local time.
-        @Author: Chris Dymond | Insight 2021
+        @Author: Chris Dymond
     .DESCRIPTION
         
     #>
