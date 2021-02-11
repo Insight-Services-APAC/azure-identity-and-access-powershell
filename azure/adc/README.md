@@ -1,6 +1,6 @@
 # Azure Active Directory Connect
 
-## Retrieving the Immutable ID of a cloud user
+## Retrieving the ImmutableId of a cloud user
 Retrieving the ImmutableId of a cloud user.
 
 ```powershell
@@ -35,7 +35,7 @@ function ConvertFrom-ImmutableIdToConsistencyGuid {
 }
 ```
 
-## Setting the ImmutableId to the MSConsistencyGuid
+## Setting the ImmutableId to the ConsistencyGuid
 ```powershell
 Set-ADUser –UserPrincipalName $Upn -Replace @{'mS-DS-ConsistencyGuid' = [GUID]$ConsistencyGuid }
 ```
