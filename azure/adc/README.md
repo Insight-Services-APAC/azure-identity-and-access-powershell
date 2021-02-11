@@ -14,7 +14,7 @@ function ConvertFrom-ImmutableIdToConsistencyGuid {
     .SYNOPSIS
         Immutable ID to Consistency GUID
 
-        @Author: Chris Dymond | Insight 2021
+        @Author: Chris Dymond
     .DESCRIPTION
     #>
     [CmdletBinding()]
@@ -47,7 +47,7 @@ function ConvertFrom-ConsistencyGuidToImmutableId {
     .SYNOPSIS
         Consistency GUID to Immutable ID
 
-        @Author: Chris Dymond | Insight 2021
+        @Author: Chris Dymond
     .DESCRIPTION
     #>
     [CmdletBinding()]
@@ -75,7 +75,7 @@ function ConvertFrom-ConsistencyGuidToImmutableId {
     .SYNOPSIS
         Converts an Immutable ID to a DN (as displayed in AAD Connect)
 
-        @Author: Chris Dymond | Insight 2021
+        @Author: Chris Dymond
     .DESCRIPTION
     #>
         [CmdletBinding()]
