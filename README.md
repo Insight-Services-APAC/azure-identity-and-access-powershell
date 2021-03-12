@@ -63,3 +63,6 @@ Import-Module AzureADPreview
   - [Username | New](on-premise/user/README.md#New-Username)
   - [Complex password | New](on-premise/user/README.md#New-ComplexPassword)
   - [Email address | New ](on-premise/user/README.md#New-Mail)
+
+# Native Graph
+- [Making a Graph call using REST](native-graph/README.md#Native-Graph-Calls)
