@@ -37,7 +37,7 @@ Import-Module AzureADPreview
 
   - [Tenant licenses | Get](azure/licensing/README.md#get-tenant-licensing-details)
 
-- Tenant Consolidation (pending)
+- [Tenant Consolidation](azure/tenant-consolidation/README.md)
 
 - [Azure AD Connect](azure/adc/README.md) (in progress)
   
