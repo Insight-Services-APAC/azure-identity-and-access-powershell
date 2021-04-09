@@ -54,4 +54,13 @@ Add the local account to the scope of AAD Connect or re-enable sync.
 On sync the the local account will join to the Cloud Account and will become DirSync enabled.
 The UPN must be manually changed (if different to the local counterpart).
 
+## Scenario: Joining a cloud only account to a pre-existing on-premise AD account
+Set the ImmutableId to the consistency GUID.
+Bring the local account into the scope of AAD Connect
+On sync the the local account will join to the Cloud Account and will become DirSync enabled.
+The UPN must be manually changed (if different to the local counterpart).
+
+```powershell
+Set-AzureADUser -ObjectId <UPN or ObjectId> -ImmutableId "<ImmutableId>"
+```
 
