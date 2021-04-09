@@ -4,6 +4,28 @@ This area intends to be a reference for assessing O365 licensing.
 
 License type applied checks [inherited vs direct assignment] (pending)
 
+ToDo: grouping service plan variations
+
+# Getting licensing users
+
+```powershell
+$LicensedUsers = [System.Collections.Generic.Dictionary[string, Microsoft.Open.AzureAD.Model.DirectoryObject]]::new()
+Get-AzureAdUser | ForEach-Object {
+    $licensed = $False
+    For ($i = 0; $i -le ($_.AssignedLicenses | Measure-Object).Count; $i++) 
+    {
+        If ( [string]::IsNullOrEmpty(  $_.AssignedLicenses[$i].SkuId ) -ne $True)
+        {
+             $licensed = $true
+        } 
+    }
+    If ( $licensed -eq $true)
+    {
+         $LicensedUsers.Add($_.UserPrincipalName,$_)
+    }
+}
+```
+
 # Get Tenant Licensing Details
 
 Includes friendly names. I have compiled these from Microsoft Docs and licensing (as discovered).
