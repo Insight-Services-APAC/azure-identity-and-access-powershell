@@ -6,7 +6,7 @@ License type applied checks [inherited vs direct assignment] (pending)
 
 ToDo: grouping service plan variations
 
-# Getting licensing users
+# Getting Licensed Users
 
 ```powershell
 $LicensedUsers = [System.Collections.Generic.Dictionary[string, Microsoft.Open.AzureAD.Model.DirectoryObject]]::new()
@@ -22,6 +22,42 @@ Get-AzureAdUser | ForEach-Object {
     If ( $licensed -eq $true)
     {
          $LicensedUsers.Add($_.UserPrincipalName,$_)
+    }
+}
+```
+
+# Getting Licensing Patterns
+
+A License Pattern consists of a license and any disabled services. If tenant licenses have been assigned manually the variation could be high.
+
+```powershell
+$LicensePatterns = [System.Collections.Generic.Dictionary[string, int]]::new()
+$LicensedUsers = [System.Collections.Generic.Dictionary[string, Microsoft.Open.AzureAD.Model.DirectoryObject]]::new()
+Get-AzureAdUser -All $true | ForEach-Object {
+    $licensed = $False
+    For ($i = 0; $i -le ($_.AssignedLicenses | Measure-Object).Count; $i++) {
+        If ( [string]::IsNullOrEmpty(  $_.AssignedLicenses[$i].SkuId ) -ne $True) {
+            $licensed = $true
+        } 
+    }
+    If ( $licensed -eq $true) {
+        $LicensedUsers.Add($_.UserPrincipalName, $_)
+        ForEach ($license in $_.AssignedLicenses) {
+            $licensePattern = "$($license.SkuId)"
+            if ($license.DisabledPlans) {
+                $licensePattern += ' DisabledPlans'
+                $license.DisabledPlans = $license.DisabledPlans | Sort-Object
+                $license.DisabledPLans | ForEach-Object { $licensePattern += ';' + $_ }
+            }
+            $existingLicensePattern = $null
+            if ($LicensePatterns.TryGetValue($licensePattern, [ref] $existingLicensePattern) -eq $false) {
+                $LicensePatterns.Add($licensePattern, 1)
+            }
+            else {
+                $CurrentCount = $LicensePatterns[$licensePattern]
+                $LicensePatterns[$licensePattern] = $CurrentCount + 1
+            }
+        }
     }
 }
 ```
