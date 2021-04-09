@@ -40,3 +40,18 @@ ForEach ($ApplicationObject in $ApplicationObjects) {
     }
 }
 ```
+
+## Scenario: Joining a new local account to a pre-existing cloud account
+Assuming the local account is not in scope of AAD Connect (yet) or has sync paused it will not have an assigned consistency GUID.
+
+```powershell
+$User = Get-ADUser -Identity <Identity> -Properties 'mS-DS-ConsistencyGuid'
+Set-ADUser -Identity $User -Replace @{ "ms-Ds-ConsistencyGuid" = $User.ObjectGUID.ToByteArray() }
+```
+
+Set the value to the ImmutableId of the counterpart cloud account.
+Add the local account to the scope of AAD Connect or re-enable sync.
+On sync the the local account will join to the Cloud Account and will become DirSync enabled.
+The UPN must be manually changed (if different to the local counterpart).
+
+
