@@ -34,28 +34,28 @@ A License Pattern consists of a license and any disabled services. If tenant lic
 $LicensePatterns = [System.Collections.Generic.Dictionary[string, int]]::new()
 $LicensedUsers = [System.Collections.Generic.Dictionary[string, Microsoft.Open.AzureAD.Model.DirectoryObject]]::new()
 Get-AzureAdUser -All $true | ForEach-Object {
-    $licensed = $False
+    $Licensed = $False
     For ($i = 0; $i -le ($_.AssignedLicenses | Measure-Object).Count; $i++) {
         If ( [string]::IsNullOrEmpty(  $_.AssignedLicenses[$i].SkuId ) -ne $True) {
-            $licensed = $true
+            $Licensed = $true
         } 
     }
-    If ( $licensed -eq $true) {
+    If ( $Licensed -eq $true) {
         $LicensedUsers.Add($_.UserPrincipalName, $_)
-        ForEach ($license in $_.AssignedLicenses) {
-            $licensePattern = "$($license.SkuId)"
-            if ($license.DisabledPlans) {
-                $licensePattern += ' DisabledPlans'
-                $license.DisabledPlans = $license.DisabledPlans | Sort-Object
-                $license.DisabledPLans | ForEach-Object { $licensePattern += ';' + $_ }
+        ForEach ($License in $_.AssignedLicenses) {
+            $LicensePattern = $License.SkuId
+            if ($License.DisabledPlans) {
+                $LicensePattern += ' DisabledPlans'
+                $License.DisabledPlans = $License.DisabledPlans | Sort-Object
+                $License.DisabledPLans | ForEach-Object { $LicensePattern += ';' + $_ }
             }
             $existingLicensePattern = $null
-            if ($LicensePatterns.TryGetValue($licensePattern, [ref] $existingLicensePattern) -eq $false) {
-                $LicensePatterns.Add($licensePattern, 1)
+            if ($LicensePatterns.TryGetValue($LicensePattern, [ref] $existingLicensePattern) -eq $false) {
+                $LicensePatterns.Add($LicensePattern, 1)
             }
             else {
-                $CurrentCount = $LicensePatterns[$licensePattern]
-                $LicensePatterns[$licensePattern] = $CurrentCount + 1
+                $CurrentCount = $LicensePatterns[$LicensePattern]
+                $LicensePatterns[$LicensePattern] = $CurrentCount + 1
             }
         }
     }
