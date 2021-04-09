@@ -28,9 +28,11 @@ Get-AzureAdUser | ForEach-Object {
 
 # Getting Licensing Patterns
 
-A License Pattern consists of a license and any disabled services. If tenant licenses have been assigned manually the variation could be high.
+A License Pattern consists of the unique combination of license and any disabled services.
 
-i.e a tenant could contains users with many different kinds of 'Office 365 E3' where-upon service plans where enabled or disabled adhoc.
+A tenant may have many licensing patterns where licenses have been assigned manually.
+
+i.e. An admin may assign the license 'Office 365 E3' with varying services for certain users. This results in licensing feature skew and a high number of licensing patterns. 
 
 ```powershell
 $LicensePatterns = [System.Collections.Generic.Dictionary[string, int]]::new()
