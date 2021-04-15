@@ -21,6 +21,13 @@ foreach ($ImportedSkuIdFriendlyNames in $ImportedSkuIdFriendlyNames) {
     $SkuFriendlyNames.Add($ImportedSkuIdFriendlyNames.SkuId, $ImportedSkuIdFriendlyNames.SkuIdFriendlyName)
 }
 
+$ImportedPlanIdFriendlyNames = Import-Csv .\PlanId_Friendly_Names.csv
+$PlanFriendlyNames = [System.Collections.Generic.Dictionary[string, string]]::new()
+
+foreach ($ImportedPlanIdFriendlyName in $ImportedPlanIdFriendlyNames) {
+    $PlanFriendlyNames.Add($ImportedPlanIdFriendlyName.PlanId, $ImportedPlanIdFriendlyName.PlanIdFriendlyName)
+}
+
 $Licenses = Get-AzureADSubscribedSku | Select-Object -Property Sku*, `
 @{N = 'SkuFriendlyName'; E = { '' } }, `
 @{N = 'Total'; E = { $_.PrepaidUnits.'Enabled' } }, `
@@ -84,12 +91,23 @@ Get-AzureAdUser -All $true | ForEach-Object {
                     $License.DisabledPlans = $License.DisabledPlans | Sort-Object
 
                     foreach ($DisabledPlanId in $License.DisabledPlans) {
-                        $DisabledPlanName = $_.AssignedPlans | Where-Object { $_.ServicePlanId -eq $DisabledPlanId } | Select-Object Service
-                        $DisabledPlanNames.Add($DisabledPlanName.Service)
+
+                        $PlanFriendlyName = $null
+                        if ($PlanFriendlyNames.TryGetValue($DisabledPlanId, [ref] $PlanFriendlyName) -eq $true) {
+                            $DisabledPlanNames.Add($PlanFriendlyName)
+                        }
+                        else {
+                            $DisabledPlanNames.Add($DisabledPlanId)
+                        }
+                
+
+                        # $DisabledPlanName = $_.AssignedPlans | Where-Object { $_.ServicePlanId -eq $DisabledPlanId } | Select-Object Service
+
+                        # $DisabledPlanNames.Add($DisabledPlanName.Service)
                     }
                 }
                 $LicensingGroup = [LicensingGroup]::new()
-                $LicensingGroup.DisabledPlanNames = $DisabledPlanNames
+                $LicensingGroup.DisabledPlanNames = $DisabledPlanNames | Sort-Object
                 $LicensingGroup.DisabledPlanCount = $DisabledPlanNames.Count
                 $LicensingGroup.UserCount = 1
                 $SkuFriendlyName = $null
@@ -113,6 +131,6 @@ Get-AzureAdUser -All $true | ForEach-Object {
 }
 
 foreach ($Key in $LicenseGroupings.Keys) {
-    $LicenseGroupings[$Key]
+    ConvertTo-Json($LicenseGroupings[$Key])
 }
 
