@@ -3,9 +3,13 @@ using namespace System.Collections.Generic
 
 $ErrorActionPreference = "Stop"
 
-# To be refactored- this is too disorganised at the moment.
+# To be refactored- this is a little disorganised at the moment.
 #
-# This code gets all licenses in a tenant and groups these by features turned on (plans enabled) per user
+# This code gets all licenses in a tenant and groups them according to their distinct offerings
+# If licenses have been allocated ad-hoc with distinct sets of plans enabled/disabled there may be 
+# many groupings returned.
+#
+# Chris Dymond
 
 try {
     Get-AzureADCurrentSessionInfo | Out-Null
@@ -15,10 +19,10 @@ catch [AadNeedAuthenticationException] {
 }
 
 $ImportedSkuIdFriendlyNames = Import-Csv .\SkuId_Friendly_Names.csv
-$SkuFriendlyNames = [System.Collections.Generic.Dictionary[string, string]]::new()
+$LicenseNames = [System.Collections.Generic.Dictionary[string, string]]::new()
 
 foreach ($ImportedSkuIdFriendlyNames in $ImportedSkuIdFriendlyNames) {
-    $SkuFriendlyNames.Add($ImportedSkuIdFriendlyNames.SkuId, $ImportedSkuIdFriendlyNames.SkuIdFriendlyName)
+    $LicenseNames.Add($ImportedSkuIdFriendlyNames.SkuId, $ImportedSkuIdFriendlyNames.SkuIdFriendlyName)
 }
 
 $ImportedPlanIdFriendlyNames = Import-Csv .\PlanId_Friendly_Names.csv
@@ -29,7 +33,7 @@ foreach ($ImportedPlanIdFriendlyName in $ImportedPlanIdFriendlyNames) {
 }
 
 $Licenses = Get-AzureADSubscribedSku | Select-Object -Property Sku*, `
-@{N = 'SkuFriendlyName'; E = { '' } }, `
+@{N = 'LicenseName'; E = { '' } }, `
 @{N = 'Total'; E = { $_.PrepaidUnits.'Enabled' } }, `
 @{N = 'Assigned'; E = { $_.ConsumedUnits } }, `
 @{N = 'Available'; E = { $_.PrepaidUnits.'Enabled' - $_.ConsumedUnits } }, `
@@ -37,20 +41,22 @@ $Licenses = Get-AzureADSubscribedSku | Select-Object -Property Sku*, `
 @{N = 'Warning'; E = { $_.PrepaidUnits.'Warning' } }
 
 foreach ($License in $Licenses) {
-    $SkuFriendlyName = $null
-    if ($SkuFriendlyNames.TryGetValue($License.SkuId, [ref] $SkuFriendlyName) -eq $false) {
+    $LicenseName = $null
+    if ($LicenseNames.TryGetValue($License.SkuId, [ref] $LicenseName) -eq $false) {
         #Write-Output "Message`t`t: There is no Friendly Name for this SKU"
         #$License
     }
     else {
-        $License.SkuFriendlyName = $SkuFriendlyName
+        $License.LicenseName = $LicenseName
     }
 }
+
+Write-Output "`n---Tenant Licensing---"
 
 $Licenses
 
 class LicensingGroup {
-    [string]$SkuFriendlyName
+    [string]$LicenseName
     [string]$SkuPartNumber
     [int]$DisabledPlanCount
     [List[string]] $DisabledPlanNames = [List[string]]::new()
@@ -59,8 +65,8 @@ class LicensingGroup {
 }
 
 function GetLicenseWithDisabledPlans([Microsoft.Open.AzureAD.Model.DirectoryObject] $User) {
-    # Licenses are either fully enabled or have some service features disabled
-    # This function just generates a key to represent features enabled on a a user for a particular license
+    # Licenses are either fully enabled or have some service plan features disabled
+    # This function just generates a key to represent a distinct license and features disabled
     $LicenseIndexKey = $License.SkuId
     if ($License.DisabledPlans) {
         $LicenseIndexKey += ' DisabledPlans'
@@ -99,20 +105,15 @@ Get-AzureAdUser -All $true | ForEach-Object {
                         else {
                             $DisabledPlanNames.Add($DisabledPlanId)
                         }
-                
-
-                        # $DisabledPlanName = $_.AssignedPlans | Where-Object { $_.ServicePlanId -eq $DisabledPlanId } | Select-Object Service
-
-                        # $DisabledPlanNames.Add($DisabledPlanName.Service)
                     }
                 }
                 $LicensingGroup = [LicensingGroup]::new()
                 $LicensingGroup.DisabledPlanNames = $DisabledPlanNames | Sort-Object
                 $LicensingGroup.DisabledPlanCount = $DisabledPlanNames.Count
                 $LicensingGroup.UserCount = 1
-                $SkuFriendlyName = $null
-                if ($SkuFriendlyNames.TryGetValue($License.SkuId, [ref] $SkuFriendlyName) -eq $true) {
-                    $LicensingGroup.SkuFriendlyName = $SkuFriendlyName
+                $LicenseName = $null
+                if ($LicenseNames.TryGetValue($License.SkuId, [ref] $LicenseName) -eq $true) {
+                    $LicensingGroup.LicenseName = $LicenseName
                 }
 
                 $SkuPartNumber = $Licenses | Where-Object { $_.SkuId -eq $License.SkuId } | Select-Object -ExpandProperty SkuPartNumber
@@ -130,7 +131,17 @@ Get-AzureAdUser -All $true | ForEach-Object {
     } 
 }
 
-foreach ($Key in $LicenseGroupings.Keys) {
-    ConvertTo-Json($LicenseGroupings[$Key])
+$LicensingResults = $LicenseGroupings.GetEnumerator() | ForEach-Object {
+    $_.Value | Select-Object LicenseName, DisabledPlanCount, `
+    @{name = "DisabledPlans"; expression = { $_.DisabledPlanNames -join ', ' } }, `
+        UserCount, `
+    @{name = "Users"; expression = { $_.Users -join ', ' } }
 }
 
+Write-Output "---Licensing Grouped by Service Plan Features---`n"
+$LicensingResults
+
+Write-Output "---Writing to CSV---`n"
+$LicensingResults | Export-Csv 'LicensingGrouped.csv' -NoTypeInformation
+
+Write-Output "Done."
