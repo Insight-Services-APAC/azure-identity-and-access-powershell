@@ -146,11 +146,34 @@ Write-Output "UserMailboxes`t`t`t$($UserMailboxes.Count)"
 
 Write-Output ""
 
-$EmailQuery = 'SMTP:Chris.Dymond@domain.com'
 
-# Linq Query example - could be placed into function
-# contains or ccontains (for case sensitive etc)
-[Linq.Enumerable]::Where(
-    $UserMailboxes,
-    [Func[PSCustomObject, bool]] { param($x); return $x.EmailAddresses -contains $EmailQuery }
-)
+# Write-Output "Getting UserMailbox sizes"
+# $UserMailboxes | ForEach-Object {
+#     $Statistics = Get-EXOMailboxStatistics $_.Identity
+#     $_ | Add-Member -NotePropertyName TotalItemSize -NotePropertyValue $Statistics.TotalItemSize
+# }
+
+# $SharedMailboxes | ForEach-Object {
+#     # Return all users with standard full access rights
+#     Get-EXOMailboxPermission $_.Identity | Where-Object { $_.User -ne "NT AUTHORITY\SELF" `
+#             -and $_.AccessRights -contains 'FullAccess' -and $_.Deny -eq $False `
+#             -and $_.InheritanceType -eq 'All' }
+
+#     # Return all trustees with standard SendAs rights
+#     Get-EXORecipientPermission $_.Identity | Where-Object { $_.Trustee -ne "NT AUTHORITY\SELF" `
+#             -and $_.AccessControlType -eq 'Allow' -and $_.AccessRights -contains 'SendAs' }
+# }
+
+# $UserMailboxes | ForEach-Object {
+#     Get-EXOMailboxPermission $_.Identity | Where-Object { $_.User -ne "NT AUTHORITY\SELF" }
+#     Get-EXORecipientPermission $_.Identity | Where-Object { $_.Trustee -ne "NT AUTHORITY\SELF" }
+# }
+
+# $EmailQuery = 'SMTP:Chris.Dymond@domain.com'
+
+# # Linq Query example - could be placed into function
+# # contains or ccontains (for case sensitive etc)
+# [Linq.Enumerable]::Where(
+#     $UserMailboxes,
+#     [Func[PSCustomObject, bool]] { param($x); return $x.EmailAddresses -contains $EmailQuery }
+# )
