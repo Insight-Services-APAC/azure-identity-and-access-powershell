@@ -19,10 +19,7 @@ If ($isConnected -ne "True") {
 
         @Author: Chris Dymond
     .DESCRIPTION
-    To DO:
-    1. Discover custom permissions
-    2. Get the mailbox sizes
-    3. On-Prem vs Cloud Creation
+
 #>
 
 
@@ -46,7 +43,9 @@ If ($isConnected -ne "True") {
 
 Write-Output "$(Get-Date) Result Size: $ResultSize"
 Write-Output "$(Get-Date) Getting Exchange Online Recipients"
+
 $exoRecipients = Get-EXORecipient -ResultSize $ResultSize
+
 Write-Output "$(Get-Date) Completed with $($exoRecipients.Count) results."
 
 # RecipientTypeDetails Lists
@@ -142,32 +141,52 @@ Write-Output "RoomMailboxes`t`t`t$($RoomMailboxes.Count)"
 Write-Output "SchedulingMailboxes`t`t$($SchedulingMailboxes.Count)"
 Write-Output "SharedMailboxes`t`t`t$($SharedMailboxes.Count)"
 Write-Output "TeamMailboxes`t`t`t$($TeamMailboxes.Count)"
-Write-Output "UserMailboxes`t`t`t$($UserMailboxes.Count)"
+Write-Output "UserMailboxes`t`t`t$($UserMailboxes.Count)`n"
 
-Write-Output ""
+function AddMailboxSizes([List[PSCustomObject]] $Mailboxes) {
+    $Mailboxes | ForEach-Object {
+        $Statistics = Get-EXOMailboxStatistics $_.Identity
+        $_ | Add-Member -NotePropertyName TotalItemSize -NotePropertyValue $Statistics.TotalItemSize -Force
+    }
+}
 
+Write-Output "Appending Mailbox Sizes"
 
-# Write-Output "Getting UserMailbox sizes"
-# $UserMailboxes | ForEach-Object {
-#     $Statistics = Get-EXOMailboxStatistics $_.Identity
-#     $_ | Add-Member -NotePropertyName TotalItemSize -NotePropertyValue $Statistics.TotalItemSize
-# }
+AddMailboxSizes $DiscoveryMailboxes
+AddMailboxSizes $EquipmentMailboxes
+AddMailboxSizes $GroupMailboxes
+AddMailboxSizes $LegacyMailboxes
+AddMailboxSizes $LinkedMailboxes
+AddMailboxSizes $LinkedRoomMailboxes
+AddMailboxSizes $PublicFolderMailboxes
+AddMailboxSizes $RemoteEquipmentMailboxes
+AddMailboxSizes $RemoteRoomMailboxes
+AddMailboxSizes $RemoteSharedMailboxes
+AddMailboxSizes $RemoteTeamMailboxes
+AddMailboxSizes $RemoteUserMailboxes
+AddMailboxSizes $RoomMailboxes
+AddMailboxSizes $SchedulingMailboxes
+AddMailboxSizes $SharedMailboxes
+AddMailboxSizes $TeamMailboxes
+AddMailboxSizes $UserMailboxes
 
-# $SharedMailboxes | ForEach-Object {
-#     # Return all users with standard full access rights
-#     Get-EXOMailboxPermission $_.Identity | Where-Object { $_.User -ne "NT AUTHORITY\SELF" `
-#             -and $_.AccessRights -contains 'FullAccess' -and $_.Deny -eq $False `
-#             -and $_.InheritanceType -eq 'All' }
+function AddMailboxPermissions([List[PSCustomObject]] $Mailboxes) {
+    $Mailboxes | ForEach-Object {
+        $FullAccessUsers = (Get-EXOMailboxPermission $_.Identity | Where-Object { $_.User -ne "NT AUTHORITY\SELF" `
+                    -and $_.AccessRights -contains 'FullAccess' -and $_.Deny -eq $False `
+                    -and $_.InheritanceType -eq 'All' } | Select-Object -ExpandProperty User) -join ', '
+        $_ | Add-Member -NotePropertyName FullAccessUsers -NotePropertyValue $FullAccessUsers -Force
+    
+        $SendAsUsers = (Get-EXORecipientPermission $_.Identity | Where-Object { $_.Trustee -ne "NT AUTHORITY\SELF" `
+                    -and $_.AccessControlType -eq 'Allow' -and $_.AccessRights -contains 'SendAs' } `
+            | Select-Object -ExpandProperty Trustee) -join ', '
+        $_ | Add-Member -NotePropertyName SendAsUsers -NotePropertyValue $SendAsUsers -Force
+    }
+}
 
-#     # Return all trustees with standard SendAs rights
-#     Get-EXORecipientPermission $_.Identity | Where-Object { $_.Trustee -ne "NT AUTHORITY\SELF" `
-#             -and $_.AccessControlType -eq 'Allow' -and $_.AccessRights -contains 'SendAs' }
-# }
-
-# $UserMailboxes | ForEach-Object {
-#     Get-EXOMailboxPermission $_.Identity | Where-Object { $_.User -ne "NT AUTHORITY\SELF" }
-#     Get-EXORecipientPermission $_.Identity | Where-Object { $_.Trustee -ne "NT AUTHORITY\SELF" }
-# }
+Write-Output "Adding Mailbox Permissions"
+AddMailboxPermissions $DiscoveryMailboxes
+#ToDo: Others.
 
 # $EmailQuery = 'SMTP:Chris.Dymond@domain.com'
 
