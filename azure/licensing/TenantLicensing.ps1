@@ -79,6 +79,8 @@ function GetLicenseWithDisabledPlans([Microsoft.Open.AzureAD.Model.DirectoryObje
 $LicenseGroupings = [System.Collections.Generic.Dictionary[string, LicensingGroup]]::new()
 $LicensedUsers = [System.Collections.Generic.Dictionary[string, Microsoft.Open.AzureAD.Model.DirectoryObject]]::new()
 
+#Get-AzureAdUser -All $true | Where-Object { ($_.ProxyAddresses -match '@').Count -eq 0 -and ($_.ProxyAddresses -match '@').Count -eq 0 } | ForEach-Object {
+#Get-AzureAdUser -All $true | Where-Object { $_.ProxyAddresses -match '@' -or $_.ProxyAddresses -match '@' } | ForEach-Object {
 Get-AzureAdUser -All $true | ForEach-Object {
     $licensed = $False
     For ($i = 0; $i -le ($_.AssignedLicenses | Measure-Object).Count ; $i++) {
