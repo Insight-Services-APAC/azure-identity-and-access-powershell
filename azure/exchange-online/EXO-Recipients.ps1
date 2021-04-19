@@ -155,6 +155,14 @@ function AddMailboxSizes([List[PSCustomObject]] $Mailboxes) {
     }
 }
 
+function SumMailboxSizes ([List[PSCustomObject]] $Mailboxes) {
+    $TotalSize = 0
+    $Mailboxes | ForEach-Object {
+        $TotalSize += $_.TotalItemSizeInGB
+    }
+    $TotalSize
+}
+
 Write-Output "Appending Mailbox Sizes"
 
 AddMailboxSizes $DiscoveryMailboxes
@@ -174,6 +182,51 @@ AddMailboxSizes $SchedulingMailboxes
 AddMailboxSizes $SharedMailboxes
 AddMailboxSizes $TeamMailboxes
 AddMailboxSizes $UserMailboxes
+
+function GetCountAndTotalSize ([List[PSCustomObject]] $Mailboxes) {
+    
+    $Count = $Mailboxes.Count
+    
+    $TotalSize = 0
+    $Mailboxes | ForEach-Object {
+        $TotalSize += $_.TotalItemSizeInGB
+    }
+    if ($Count -ne 0) {
+        "$Count $TotalSize GB"
+    }
+    else {
+        $Count
+    }
+    
+}
+
+Write-Output "DiscoveryMailboxes`t`t$(GetCountAndTotalSize $DiscoveryMailboxes)"
+Write-Output "DynamicDistributionGroups`t$($DynamicDistributionGroups.Count)"
+Write-Output "EquipmentMailboxes`t`t$(GetCountAndTotalSize $EquipmentMailboxes)"
+Write-Output "GroupMailboxes`t`t`t$(GetCountAndTotalSize $GroupMailboxes)"
+Write-Output "GuestMailUsers`t`t`t$($GuestMailUsers.Count)"
+Write-Output "LegacyMailboxes`t`t`t$(GetCountAndTotalSize $LegacyMailboxes)"
+Write-Output "LinkedMailboxes`t`t`t$(GetCountAndTotalSize $LinkedMailboxes)"
+Write-Output "LinkedRoomMailboxes`t`t$(GetCountAndTotalSize $LinkedRoomMailboxes)"
+Write-Output "MailContacts`t`t`t$($MailContacts.Count)"
+Write-Output "MailForestContacts`t`t$($MailForestContacts.Count)"
+Write-Output "MailNonUniversalGroups`t`t$($MailNonUniversalGroups.Count)"
+Write-Output "MailUniversalDistributionGroups`t$($MailUniversalDistributionGroups.Count)"
+Write-Output "MailUniversalSecurityGroups`t$($MailUniversalSecurityGroups.Count)"
+Write-Output "MailUsers`t`t`t$($MailUsers.Count)"
+Write-Output "PublicFolders`t`t`t$($PublicFolders.Count)"
+Write-Output "PublicFolderMailboxes`t`t$(GetCountAndTotalSize $PublicFolderMailboxes)"
+Write-Output "RemoteEquipmentMailboxes`t$(GetCountAndTotalSize $RemoteEquipmentMailboxes)"
+Write-Output "RemoteRoomMailboxes`t`t$(GetCountAndTotalSize $RemoteRoomMailboxes)"
+Write-Output "RemoteSharedMailboxes`t`t$($RemoteSharedMailboxes.Count)"
+Write-Output "RemoteTeamMailboxes`t`t$($RemoteTeamMailboxes.Count)"
+Write-Output "RemoteUserMailboxes`t`t$($RemoteUserMailboxes.Count)"
+Write-Output "RoomLists`t`t`t$($RoomLists.Count)"
+Write-Output "RoomMailboxes`t`t`t$(GetCountAndTotalSize $RoomMailboxes)"
+Write-Output "SchedulingMailboxes`t`t$(GetCountAndTotalSize $SchedulingMailboxes)"
+Write-Output "SharedMailboxes`t`t`t$(GetCountAndTotalSize $SharedMailboxes)"
+Write-Output "TeamMailboxes`t`t`t$(GetCountAndTotalSize $TeamMailboxes)"
+Write-Output "UserMailboxes`t`t`t$(GetCountAndTotalSize $UserMailboxes)`n"
 
 function AddMailboxPermissions([List[PSCustomObject]] $Mailboxes) {
     $Mailboxes | ForEach-Object {
