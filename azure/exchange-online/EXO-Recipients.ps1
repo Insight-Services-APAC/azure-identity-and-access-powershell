@@ -147,6 +147,11 @@ function AddMailboxSizes([List[PSCustomObject]] $Mailboxes) {
     $Mailboxes | ForEach-Object {
         $Statistics = Get-EXOMailboxStatistics $_.Identity
         $_ | Add-Member -NotePropertyName TotalItemSize -NotePropertyValue $Statistics.TotalItemSize -Force
+
+        $SizeInGB = [Math]::Round($_.TotalItemSize.Value.ToString().Substring($bytesStartIndex + 1, `
+                    $_.TotalItemSize.Value.ToString().Length - $bytesStartIndex - 7).Replace(',', '') / 1GB, 2)
+
+        $_ | Add-Member -NotePropertyName TotalItemSizeInGB -NotePropertyValue $SizeInGB -Force
     }
 }
 
@@ -196,3 +201,14 @@ AddMailboxPermissions $DiscoveryMailboxes
 #     $UserMailboxes,
 #     [Func[PSCustomObject, bool]] { param($x); return $x.EmailAddresses -contains $EmailQuery }
 # )
+
+# $UserMailboxes | ForEach-Object {
+#     # (86,004,285 bytes)
+#     #82.02 MB (86, 004, 285 bytes)
+#     $bytesStartIndex = $_.TotalItemSize.Value.ToString().IndexOf('(')
+
+#     [math]::round($_.TotalItemSize.Value.ToString().Substring($bytesStartIndex + 1, `
+#                 $_.TotalItemSize.Value.ToString().Length - $bytesStartIndex - 7).Replace(',', '') / 1GB, 2)
+
+    
+# }
