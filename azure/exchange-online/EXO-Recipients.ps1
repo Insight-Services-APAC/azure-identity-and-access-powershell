@@ -170,6 +170,19 @@ Write-Output "Adding Mailbox Permissions"
 #AddMailboxPermissions $DiscoveryMailboxes
 #ToDo: Others.
 
+# Retention policy is not aligned to the Compliance Center results.
+# Just use the GUI
+# $WithRetentionPolicy = Get-EXOMailbox -ResultSize 'Unlimited' -Filter 'RetentionPolicy -ne $null' `
+#     -Properties RetentionPolicy | Select-Object RetentionPolicy
+    
+# Write-Output "Mailboxes with retention policy: $($WithRetentionPolicy.Count)"
+# ($WithRetentionPolicy | Select-Object -Unique -ExpandProperty RetentionPolicy) -join ', '
+
+# $NoRetentionPolicy = Get-EXOMailbox -ResultSize 'Unlimited' -Filter 'RetentionPolicy -eq $null' `
+#     -Properties RetentionPolicy | Select-Object RetentionPolicy
+
+#Write-Output "Mailboxes without a retention policy: $($NoRetentionPolicy.Count)"
+
 # $EmailQuery = 'SMTP:Chris.Dymond@domain.com'
 
 # # Linq Query example - could be placed into function
