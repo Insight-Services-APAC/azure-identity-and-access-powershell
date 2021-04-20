@@ -80,7 +80,6 @@ $RecipientTypeDetails = @(
 
 function AddMailboxSizes([List[PSCustomObject]] $Mailboxes) {
     $Mailboxes | ForEach-Object {
-        $_
         # Preference lookup on GUID
         if ($_.ExternalDirectoryObjectId) {
             $Statistics = Get-EXOMailboxStatistics -ExchangeGuid $_.ExternalDirectoryObjectId
@@ -131,6 +130,7 @@ $RecipientTypeDetails | ForEach-Object {
     $esi.TotalObjects = $Resources.Count
 
     if ($_ -match 'mailbox') {
+        Write-Output "$(Get-Date) Calculating size of $_ objects..."
         AddMailboxSizes $Resources
         $TotalSize = 0
         $Resources | ForEach-Object {
@@ -145,6 +145,11 @@ $OverviewReport
 
 $OverviewReport.GetEnumerator() | Export-Csv 'ExchangeOverviewReport.csv' -NoTypeInformation
 
+# $Query = [Linq.Enumerable]::ToList(([Linq.Enumerable]::Where(
+#             $AllRecipientsList, [Func[PSCustomObject, bool]] { param($x); return `
+#                     $x.EmailAddresses -match '' -and $x.EmailAddresses -notmatch '@' }
+#         )))
+        
 return
 
 function AddMailboxPermissions([List[PSCustomObject]] $Mailboxes) {
