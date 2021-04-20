@@ -147,3 +147,22 @@ Write-Output "---Writing to CSV---`n"
 $LicensingResults | Export-Csv 'LicensingGrouped.csv' -NoTypeInformation
 
 Write-Output "Done."
+
+function Get-AzureADGroupsWithLicenses {
+    
+    Get-AzureADMSAdministrativeUnit -Top 1 | Out-Null # Just to ensure we have a graph.microsoft.com token (not just a graph.windows.net)
+
+    $GraphToken = [Microsoft.Open.Azure.AD.CommonLibrary.AzureSession]::TokenCache.ReadItems() | `
+        Where-Object { $_.Resource -eq 'https://graph.microsoft.com' } | Select-Object AccessToken
+    if ($null -eq $GraphToken) {
+        throw "The Graph Access token is not available!"
+    }
+    $UserRegistrationDetails = @{
+        Uri     = 'https://graph.microsoft.com/beta/groups?$filter=startswith(displayName, ''usr'')&$select=id,onPremisesSyncEnabled,displayName,assignedLicenses'
+        Headers = @{
+            'Authorization' = "Bearer $($GraphToken.AccessToken)" 
+        }
+        Method  = 'GET'
+    }
+    Invoke-RestMethod @UserRegistrationDetails
+}
