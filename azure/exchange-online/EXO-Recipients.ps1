@@ -80,7 +80,15 @@ $RecipientTypeDetails = @(
 
 function AddMailboxSizes([List[PSCustomObject]] $Mailboxes) {
     $Mailboxes | ForEach-Object {
-        $Statistics = Get-EXOMailboxStatistics $_.Identity
+        $_
+        # Preference lookup on GUID
+        if ($_.ExternalDirectoryObjectId) {
+            $Statistics = Get-EXOMailboxStatistics -ExchangeGuid $_.ExternalDirectoryObjectId
+        }
+        else {
+            $Statistics = Get-EXOMailboxStatistics -Identity $_.Identity
+        }
+        
         $bytesStartIndex = $Statistics.TotalItemSize.Value.ToString().IndexOf('(')
         $_ | Add-Member -NotePropertyName TotalItemSize -NotePropertyValue $Statistics.TotalItemSize -Force
 
