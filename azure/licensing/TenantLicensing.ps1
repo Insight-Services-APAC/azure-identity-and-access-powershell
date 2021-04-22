@@ -149,7 +149,8 @@ $LicensingResults | Export-Csv 'LicensingGrouped.csv' -NoTypeInformation
 Write-Output "Done."
 
 function Get-AzureADGroupsWithLicenses {
-    
+
+    # Unfinished - In progress function
     Get-AzureADMSAdministrativeUnit -Top 1 | Out-Null # Just to ensure we have a graph.microsoft.com token (not just a graph.windows.net)
 
     $GraphToken = [Microsoft.Open.Azure.AD.CommonLibrary.AzureSession]::TokenCache.ReadItems() | `
@@ -157,12 +158,46 @@ function Get-AzureADGroupsWithLicenses {
     if ($null -eq $GraphToken) {
         throw "The Graph Access token is not available!"
     }
-    $UserRegistrationDetails = @{
-        Uri     = 'https://graph.microsoft.com/beta/groups?$filter=startswith(displayName, ''usr'')&$select=id,onPremisesSyncEnabled,displayName,assignedLicenses'
+
+    $AttributesToSelect = @(
+        'id'
+        'displayName'
+        'onPremisesSyncEnabled'
+        'mail'
+    )
+
+    $SelectData = $AttributesToSelect -join ","
+    $GraphUri = 'https://graph.microsoft.com/beta/groups?$select=' + $SelectData
+
+    $GraphRequest = @{
+        Uri     = $GraphUri
         Headers = @{
             'Authorization' = "Bearer $($GraphToken.AccessToken)" 
         }
         Method  = 'GET'
     }
-    Invoke-RestMethod @UserRegistrationDetails
+
+    $Results = Invoke-RestMethod @GraphRequest
+
+
+    Do {
+
+
+
+    } While ($null -ne $Results.'@odata.nextLink')
+
+    while ($MoreResults) {
+        foreach ($Result in $Results.value) {
+            Write-Output $Result
+        }
+        if ($null -ne $Results.'@odata.nextLink') {
+            $Results = Invoke-RestMethod -Method GET -Uri $Results.'@odata.nextLink' -Headers @{Authorization = "Bearer $Token" }
+        }
+        else {
+            $MoreResults = $false
+        }
+    }
+
+
+    Invoke-RestMethod @GraphRequest
 }
