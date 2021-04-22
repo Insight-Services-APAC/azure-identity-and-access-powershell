@@ -4,6 +4,13 @@
 
 using namespace System.Collections.Generic
 
+try {
+    Get-AzureADCurrentSessionInfo | Out-Null
+}
+catch [AadNeedAuthenticationException] {
+    Connect-AzureAD
+}
+
 class Group {
     [string]$DisplayName
     [string]$Mail
@@ -13,7 +20,7 @@ class Group {
 
 [List[Group]] $GroupList = [List[Group]]::new()
 
-$CloudOnlyGroups = Get-AzureADMSGroup -All $true | Where-Object { $_.OnPremisesSyncEnabled -eq $null }
+$CloudOnlyGroups = Get-AzureADMSGroup -All $true | Where-Object { $_.OnPremisesSyncEnabled -ne $true }
 
 Foreach ($CloudOnlyGroup in $CloudOnlyGroups) {
 
@@ -46,3 +53,31 @@ $GroupList | Sort-Object Displayname
 
 $GroupList | Sort-Object Displayname | Export-Csv 'CloudOnlyGroups.csv' -NoTypeInformation
 
+
+# class ConflictingGroup : Group {
+#     [string]$ConflictName
+# }
+
+# [List[ConflictingGroup]] $ConflictingGroups = [List[ConflictingGroup]]::new()
+
+# $TreasuryGroupList | ForEach-Object {
+#     if ($_.Type -eq 'Microsoft 365') {
+#         $MailToCheck = $_.Mail.Replace('@.onmicrosoft.com', '@.onmicrosoft.com' )
+        
+#         $Query = [Linq.Enumerable]::FirstOrDefault(([Linq.Enumerable]::Where($FinanceGroupList, [Func[Group, bool]] { param($x); return `
+#                             $x.Mail -eq $MailToCheck }
+#                 )))
+#         if ($null -ne $Query) {
+#             [ConflictingGroup] $Group = [ConflictingGroup]::new()
+#             $Group.DisplayName = $_.DisplayName
+#             $Group.Mail = $_.Mail
+#             $Group.Type = $_.Type
+#             $Group.Owners = $_.Owners
+#             $Group.ConflictName = $MailToCheck
+#             $ConflictingGroups.Add($Group)
+#         }
+
+#     }
+# }
+
+# $ConflictingGroups | Sort-Object Displayname | Export-Csv 'ConflictGroups.csv' -NoTypeInformation
