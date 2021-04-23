@@ -7,9 +7,9 @@ Import-Module ExchangeOnlineManagement
 
 # Import-Module .\IA-EXO.psm1
 #
+# Retrieve all Exchange Online Recipients with '<tenant>.onmicrosoft.com'
 # Get-AzureIAOnMicrosoftRecipients
-# $Results = Get-AzureIAOnMicrosoftRecipients
-# Disconnect-ExchangeOnline (if required)
+# 
 #
 
 function Get-AzureIAOnMicrosoftRecipients {
