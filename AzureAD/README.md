@@ -1,8 +1,50 @@
 # Azure AD
 
+## Users
+
+### Get-IAAzureADUsers
+
+Returns a list of all users in Azure AD. A flag denotes those synchronsied from on-premise.
+
+```powershell
+    <#
+    .SYNOPSIS
+    Provides a complete list of user accounts in the tenant.
+    The results are tagged with a UserType.
+
+    UserTypes include: User, B2B and Exchange objects.
+
+    .DESCRIPTION
+    Users that are attached to another mailbox type (not a 'user' mailbox) have their UserType adjusted to 'Exchange'
+    This makes a clear distinction from a person and a role or resource account in Exchange Online.
+    UPNs, Enabled state, Mail, UserType, MailboxType and a flag for on-premise synchronisation are included.
+
+    .EXAMPLE
+    Get-IAAzureADUsers
+
+    UserPrincipalName     : chris.dymond@domain.com
+    Enabled               : True
+    Mail                  : chris.dymond@domain.com
+    UserType              : User
+    RecipientType         : UserMailbox
+    OnPremisesSyncEnabled : True
+
+    UserPrincipalName     : BoardRoom@chrisdymond.onmicrosoft.com
+    Enabled               : True
+    Mail                  : BoardRoom@domain.com
+    UserType              : Exchange
+    RecipientType         : RoomMailbox
+    OnPremisesSyncEnabled : False
+
+
+    .NOTES
+
+    #>
+```
+
 ## Groups
 
-### Get-IAAzureADGroup
+### Get-IAAzureADGroups
 
 Returns a list of all groups in Azure AD. A flag denotes those synchronsied from on-premise.
 

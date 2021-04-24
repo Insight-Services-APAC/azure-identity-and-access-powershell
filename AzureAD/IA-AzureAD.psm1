@@ -16,7 +16,101 @@ function Assert-AzureADConnected {
     }
 }
 
+
+function Assert-ExchangeOnlineConnected {
+    $sessions = Get-PSSession | Select-Object -Property State, Name
+    $isConnected = (@($sessions) -like '@{State=Opened; Name=ExchangeOnlineInternalSession*').Count -gt 0
+    If ($isConnected -ne $True) {
+        Get-PSSession | Remove-PSSession
+        Connect-ExchangeOnline
+    }
+}
+
 # Exported member functions
+
+class IAUser {
+    [string]$UserPrincipalName
+    [string]$Enabled
+    [string]$Mail
+    [string]$UserType
+    [string]$RecipientType
+    [string]$OnPremisesSyncEnabled = $true
+}
+
+function Get-IAAzureADUsers {
+    <#
+    .SYNOPSIS
+    Provides a complete list of user accounts in the tenant.
+    The results are tagged with a UserType.
+    
+    UserTypes include: User, B2B and Exchange objects.
+    
+    .DESCRIPTION
+    Users that are attached to another mailbox type (not a 'user' mailbox) have their UserType adjusted to 'Exchange'
+    This makes a clear distinction from a person and a role or resource account in Exchange Online.
+    UPNs, Enabled state, Mail, UserType, MailboxType and a flag for on-premise synchronisation are included. 
+    
+    .EXAMPLE
+    Get-IAAzureADUsers
+
+    UserPrincipalName     : chris.dymond@domain.com
+    Enabled               : True
+    Mail                  : chris.dymond@domain.com
+    UserType              : User
+    RecipientType         : UserMailbox
+    OnPremisesSyncEnabled : True
+
+    UserPrincipalName     : BoardRoom@chrisdymond.onmicrosoft.com
+    Enabled               : True
+    Mail                  : BoardRoom@domain.com
+    UserType              : Exchange
+    RecipientType         : RoomMailbox
+    OnPremisesSyncEnabled : False
+
+    
+    .NOTES
+    
+    #>
+    [CmdletBinding()]
+    [OutputType([List[IAUser]])]
+    param
+    (
+
+    )
+    process {
+        Assert-AzureADConnected
+        Assert-ExchangeOnlineConnected
+        $iaUsersList = [List[IAUser]]::new()
+        $azureADUsers = Get-AzureADUser -All $True
+        $mailboxAccounts = Get-EXOMailbox -ResultSize Unlimited
+        $azureADUsers | ForEach-Object {
+            $iaUser = [IAUser]::new()
+            $iaUser.UserPrincipalName = $_.UserPrincipalName
+            $iaUser.Enabled = $_.AccountEnabled
+            $iaUser.Mail = $_.Mail
+            switch ($_.UserType) {
+                "Member" { $iaUser.UserType = "User"; break }
+                "Guest" { $iaUser.UserType = "B2B"; break }
+                Default { throw "Unhandled UserType" }
+            }
+            $mailbox = [Linq.Enumerable]::FirstOrDefault([Linq.Enumerable]::Where($mailboxAccounts, `
+                        [Func[Object, bool]] { param($x); return $x.ExternalDirectoryObjectId -eq $_.ObjectId }
+                ))
+            if ($mailbox) {
+                $iaUser.RecipientType = $mailbox.RecipientTypeDetails
+                if ($iaUSer.RecipientType -ne 'RemoteUserMailbox' -or 'UserMailbox') {
+                    $iaUser.UserType = 'Exchange Resource'
+                }
+            }
+            if ($_.DirSyncEnabled -ne $true) {
+                $iaUser.OnPremisesSyncEnabled = $false
+            }
+            $iaUsersList.Add($iaUser)
+        }
+        $iaUsersList | Sort-Object DisplayName
+    }
+}
+Export-ModuleMember -Function Get-IAAzureADUsers
 
 class IAGroup {
     [string]$DisplayName
