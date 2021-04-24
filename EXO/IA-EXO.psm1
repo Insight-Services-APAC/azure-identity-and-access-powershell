@@ -22,9 +22,32 @@ function Assert-ExchangeOnlineConnected {
 function Get-IAEXORecipientsOnMicrosoft {
     <#
     .SYNOPSIS
-        Returns the list of objects containing '<tenant>.onmicrosoft.com'
-        @Author: Chris Dymond
+    Returns all recipients with the @tenant.onmicrosoft.com suffix.
+    
     .DESCRIPTION
+    All recipients matching onmicrosoft.com are returned as a List.
+    
+    .EXAMPLE
+    $Results = Get-IAEXORecipientsOnMicrosoft
+    $Results
+
+    ...
+    ExternalDirectoryObjectId : ...
+    Identity                  : Chris Dymond
+    Alias                     : Chris.Dymond
+    EmailAddresses            : {SPO:SIP:SMTP.mail.onmicrosoft.com...}
+    DisplayName               : Chris Dymond
+    Name                      : Chris Dymond
+    PrimarySmtpAddress        : Chris.Dymond@domain.com
+    RecipientType             : UserMailbox
+    RecipientTypeDetails      : UserMailbox
+    ExchangeVersion           : 0.20 (15.0.0.0)
+    DistinguishedName         : CN=...
+    OrganizationId            : ...
+    ...
+    
+    .NOTES
+    
     #>
     [CmdletBinding()]
     [OutputType([List[PSCustomObject]])]

@@ -1,68 +1,40 @@
-# Introduction
+# Overview
 
-This repository intends to be a technical reference for managing aspects of Azure’s Identity and Access Management via PowerShell.
+This solution aims to provide an extended set of cmdlets for managing Identity & Access (IA) across Azure AD and Exchange Online.
 
-It will primarily be a showcase for common PowerShell queries for both Azure and On-Premise AD with some functions grouped into modules where applicable.
+It intends to supplement the existing (Microsoft provided) AzureADPreview and ExchangeOnlineManagement cmdlets.
+
+This library is a work in progress.
 
 @author Chris Dymond chris.dymond@insight.com
 
-## Prerequisites
+# Referencing the IA module
 
-Many of these cmdlets are based upon the AzureADPreview PowerShell Module
+To use any of these cmdlets you must import this module.
+
+```powershell
+Import-Module .\IA.psd1
+```
+
+As this library will make extensive use of both AzureADPreview and ExchangeManagementOnline it is a requirement that these two modules are also installed or already available.
 
 ```powershell
 Install-Module AzureADPreview
-Import-Module AzureADPreview
+Install-Module ExchangeOnlineManagement
 ```
 
-# Azure AD
+Where a specific feature is not exposed by these modules a native Graph API call may suffice and be included in the IA library.
 
-- [B2B](azure/b2b-user/README.md)
+# Use Cases
 
-  - [Self service sign up | Feature Overview](azure/b2b-user/README.md)
-  - [Accounts | Get](azure/b2b-user/README.md#guests)
-  - [Partner domains in your tenant | Get](azure/b2b-user/README.md#get-b2b-domains)
-  - [Extension attributes | Get](azure/b2b-user/README.md#extension-attributes)
-  - [Last Sign-In | Get](azure/b2b-user/README.md#last-sign-in)
+## [Exchange Online](EXO/README.md)
 
-- [User](azure/user/README.md)
+- Recipients]
 
-  - [Account | New](azure/user/README.md#Creating-a-cloud-user-account)
-  - [Complex password | New](azure/user/README.md#New-ComplexPassword)
-  - [Last Sign-In | Get](azure/user/README.md#last-sign-in)
+  - Get All | and their current size (where a mailbox)
+  - Get All | with an @tenant.onmicrosoft.com address
 
-- Group (pending)
+## Azure AD
 
-- Licensing
-
-  - [Tenant licenses | Get](azure/licensing/README.md#get-tenant-licensing-details)
-
-- [Tenant Consolidation](azure/tenant-consolidation/README.md)
-
-- [Azure AD Connect](azure/adc/README.md) (in progress)
-  
-    **Working with Anchors**
-  - [Retrieving the ImmutableId of a cloud user](azure/adc#Retrieving-the-ImmutableId-of-a-cloud-user)
-  - [Converting the ImmutableId to a ConsistencyGuid](azure/adc#Converting-the-ImmutableId-to-a-ConsistencyGuid)
-  - [Setting the ImmutableId to the ConsistencyGuid](azure/adc#Setting-the-ImmutableId-to-the-ConsistencyGuid)
-  - [Converting the ConsistencyGuid to a ImmutableId](azure/adc#Converting-the-ConsistencyGuid-to-a-ImmutableId)
-  - [Converting the ImmutableId to a DN](azure/adc#Converting-the-ImmutableId-to-a-DN)
-
-- Azure AD Connect cloud sync (pending)
-
-- Exchange Online - EXO (pending)
-
-- Conditional Access (pending)
-
-# On-Premise AD
-
-- Discovery (pending)
-
-- [User](on-premise/user/README.md)
-  - [Sanitised String | ConvertTo](on-premise/user/README.md#ConvertTo-StringWithoutApostropheOrSpace)
-  - [Username | New](on-premise/user/README.md#New-Username)
-  - [Complex password | New](on-premise/user/README.md#New-ComplexPassword)
-  - [Email address | New ](on-premise/user/README.md#New-Mail)
-
-# Native Graph
-- [Making a Graph call using REST](native-graph/README.md#Native-Graph-Calls)
+- Users
+- Groups
