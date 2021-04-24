@@ -1,7 +1,4 @@
 # Identity and Access (IA) - Additional cmdlets for Exchange Online
-#
-# Import-Module .\IA-EXO.psm1
-#
 # Author: Chris Dymond
 # Date: 23-04-2021
 
@@ -9,7 +6,6 @@
 
 using namespace System.Collections.Generic
 $ErrorActionPreference = "Stop"
-Import-Module ExchangeOnlineManagement
 
 # Private member functions
 function Assert-ExchangeOnlineConnected {
@@ -23,7 +19,7 @@ function Assert-ExchangeOnlineConnected {
 
 # Exported member functions
 
-function Get-IAEXOOnMicrosoftRecipients {
+function Get-IAEXORecipientsOnMicrosoft {
     <#
     .SYNOPSIS
         Returns the list of objects containing '<tenant>.onmicrosoft.com'
@@ -48,7 +44,7 @@ function Get-IAEXOOnMicrosoftRecipients {
         $onMicrosoftSmtpObjects
     }
 }
-Export-ModuleMember -Function Get-IAEXOOnMicrosoftRecipients
+Export-ModuleMember -Function Get-IAEXORecipientsOnMicrosoft
 
 class IARecipients {
     [string]$CombinedSizeInGB
@@ -58,10 +54,53 @@ class IARecipients {
 function Get-IAEXORecipientsAsDictionary {
     <#
     .SYNOPSIS
-        Returns Exchange Online recipients organised by type with mailbox sizes calculated (where applicable)
-        Keys of the returned dictionary object refer to the item type ie. UserMailbox, SharedMailbox etc
-        @Author: Chris Dymond
+    Retrives all recipients on the connected Exchange Online environment.
+    
     .DESCRIPTION
+    All returned recipients will be grouped by their type.
+
+    ie. Where Exchange Online contains Room Mailboxes, Mail Users and User Mailboxes;
+    You will see an object returned with these keys.
+    
+    .EXAMPLE
+    $Results = Get-IAEXORecipientsAsDictionary
+    $Results
+
+    Key                            Value
+    ---                            -----
+    UserMailbox                    IARecipients
+    RoomMailbox                    IARecipients
+    MailUsers                      IARecipients
+
+    $Results['UserMailbox']
+
+
+    CombinedSizeInGB Recipients
+    ---------------- ----------
+    725.87           {@{ExternalDirectoryObjectId=....
+
+
+    $Results['UserMailbox'].Recipients
+
+    ...
+    ExternalDirectoryObjectId : 
+    Identity                  : Chris Dymond
+    Alias                     : Chris.Dymond
+    EmailAddresses            : {SPO:SIP:SMTP.mail.onmicrosoft.com...}
+    DisplayName               : Chris Dymond
+    Name                      : Chris Dymond
+    PrimarySmtpAddress        : Chris.Dymond@domain.com
+    RecipientType             : UserMailbox
+    RecipientTypeDetails      : UserMailbox
+    ExchangeVersion           : 0.20 (15.0.0.0)
+    DistinguishedName         : CN=
+    OrganizationId            : 
+    TotalItemSize             : 1.243 GB (1,334,578,302 bytes)
+    TotalItemSizeInGB         : 1.24
+    ...
+    
+    .NOTES
+    
     #>
     [CmdletBinding()]
     [OutputType([Dictionary[String, IARecipients]])]
