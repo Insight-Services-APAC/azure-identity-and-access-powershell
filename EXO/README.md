@@ -61,7 +61,7 @@ Retrives all recipients and their size (where a mailbox).
 
 ### Get-IAEXORecipientsOnMicrosoft
 
-Retrieve's all recipients with an @something.onmicrosoft.com proxy address.
+Retrieve's all recipients with the @something.onmicrosoft.com smtp address.
 
 ```powershell
     <#

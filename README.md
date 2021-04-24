@@ -29,12 +29,14 @@ Where a specific feature is not exposed by these modules a native Graph API call
 
 ## [Exchange Online](EXO/README.md)
 
-- Recipients]
+- Recipients
 
-  - Get All | and their current size (where a mailbox)
-  - Get All | with an @tenant.onmicrosoft.com address
+  - Getting all recipients and their current mailbox size (where applicable)
+  - Get all recipients with the @tenant.onmicrosoft.com smtp address
 
-## Azure AD
+## [Azure AD](AzureAD/README.md)
 
 - Users
+
 - Groups
+  - Getting a list of all groups in your organisation
