@@ -6,6 +6,11 @@ It intends to supplement the existing (Microsoft provided) AzureADPreview and Ex
 
 This library is a work in progress.
 
+## Backlog
+
+- Custom MS Graph Calls :
+  - Read MFA status, to achieve similiar results to MSOnline (msol) cmdlets
+
 @author Chris Dymond chris.dymond@insight.com
 
 # Referencing the IA module
@@ -31,12 +36,14 @@ Where a specific feature is not exposed by these modules a native Graph API call
 
 - Recipients
 
-  - Getting all recipients and their current mailbox size (where applicable)
-  - Get all recipients with the @tenant.onmicrosoft.com smtp address
+  - How to retrieve all recipients and their current mailbox size (where applicable)
+  - How to retrieve recipients with the @tenant.onmicrosoft.com smtp address
 
 ## [Azure AD](AzureAD/README.md)
 
 - Users
 
+  - How to retrieve a list of all users in your tenant (includes a UserType breakdown; User, Exchange Object, B2B)
+
 - Groups
-  - Getting a list of all groups in your organisation
+  - How to retrieve a list of all groups in your organisation
