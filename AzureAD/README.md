@@ -69,6 +69,29 @@ Returns a dictionary summation of Guests in Azure AD grouped by their domain.
     #>
 ```
 
+### Get-IAAzureADUserLastSignInAsDateTime
+
+Returns the last successful date/time of an Azure log on.
+
+```powershell
+    <#
+    .SYNOPSIS
+    Returns the last successful sign-in for a user (converted to local time).
+
+    Note that without a logging solution you are only looking at the last 30 days.
+
+    .DESCRIPTION
+    Last successful cloud sign-in of a user (up to 30 days)
+
+    .EXAMPLE
+    Get-IAAzureADUserLastSignInAsDateTime 'chris.dymond@domain.com'
+
+    Sunday, 25 April 2021 3:34:34 PM
+
+    .NOTES
+    #>
+```
+
 ## Groups
 
 ### Get-IAAzureADGroupsAsList

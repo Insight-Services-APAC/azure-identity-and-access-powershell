@@ -28,6 +28,46 @@ function Assert-ExchangeOnlineConnected {
 
 # Exported member functions
 
+function Get-IAAzureADUserLastSignInAsDateTime {
+    <#
+    .SYNOPSIS
+    Returns the last successful sign-in for a user (converted to local time). 
+
+    Note that without a logging solution you are only looking at the last 30 days.
+   
+    .DESCRIPTION
+    Last successful cloud sign-in of a user (up to 30 days)
+    
+    .EXAMPLE
+    Get-IAAzureADUserLastSignInAsDateTime 'chris.dymond@domain.com'
+
+    Sunday, 25 April 2021 3:34:34 PM
+
+    .NOTES
+    #>
+    [CmdletBinding()]
+    [OutputType([DateTime])]
+    param
+    (
+        [Parameter(
+            Mandatory = $true,
+            ValueFromPipelineByPropertyName = $true,
+            Position = 0)]
+        [String] $UserPrincipalName
+    )
+    process {
+        # Results are returned in order of most recent activity
+        # This filter returns only the last successful event.
+        $Filter = "userPrincipalName eq '$UserPrincipalName' and status/errorCode eq 0"
+        $LastSignIn = Get-AzureADAuditSignInLogs -Filter $Filter | Select-Object -First 1
+        if ($null -eq $LastSignIn) {
+            Throw "The UserPrincipalName: '$UserPrincipalName' did not return a successful sign-in."
+        }
+        [DateTime]::ParseExact($LastSignIn.CreatedDateTime, "yyyy-MM-ddTHH:mm:ssZ", $null)
+    }
+}
+Export-ModuleMember -Function Get-IAAzureADUserLastSignInAsDateTime
+
 function Get-IAAzureADGuestUserDomainsAsDictionary {
     <#
     .SYNOPSIS

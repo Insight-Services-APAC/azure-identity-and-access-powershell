@@ -45,6 +45,7 @@ Where a specific feature is not exposed by these modules a native Graph API call
 
   - [Retrieve all (includes a UserType classification; User, Exchange, B2B)](/AzureAD/README.md#Get-IAAzureADUsersAsList)
   - [Retrieve all B2B domains in the tenant as well as their user count](/AzureAD/README.md#Get-IAAzureADGuestUserDomainsAsDictionary)
+  - [Get the date and time of last successful sign in](/AzureAD/README.md#Get-IAAzureADUserLastSignInAsDateTime)
 
 - Groups
   - [Retrieve all (includes a GroupType classifcation; Security, Distribution or M365)](/AzureAD/README.md#Get-IAAzureADGroupsAsList)
