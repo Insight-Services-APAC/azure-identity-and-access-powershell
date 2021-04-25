@@ -28,6 +28,56 @@ function Assert-ExchangeOnlineConnected {
 
 # Exported member functions
 
+function Get-IAAzureADGuestUserDomainsAsDictionary {
+    <#
+    .SYNOPSIS
+    Returns the number of Guest (B2B) domains in the tenant.
+   
+    .DESCRIPTION
+    Guests counts are group according to domain. 
+    ie. where there are are two B2B users with user1@domain.com and user2@domain.com they will appear
+    as a count of '2' under domain.com
+    
+    .EXAMPLE
+    Get-IAAzureADGuestUserDomainsAsDictionary
+
+    Key                 Value
+    ---                 -----
+    chrisdymond.org         1
+    chris.org              10
+    chris.net              13
+    .NOTES
+    
+    #>
+    [CmdletBinding()]
+    [OutputType([Dictionary[String, Int32]])]
+    param
+    (
+
+    )
+    process {
+        Assert-AzureADConnected
+        $users = Get-AzureADUser -Filter "userType eq 'Guest'" -All $true
+        $b2bDomains = [Dictionary[String, Int32]]::new()
+        foreach ($user in $users) {
+            # Mail is not always populated
+            # UPN will be used to ascertain the host tenant
+            # chris.dymond_something.com.au#EXT#@x.onmicrosoft.com
+            # chris_dymond_something.com.au#EXT#@x.onmicrosoft.com
+            $userPrincipalName = $user.UserPrincipalName
+            $b2bDomain = ($userPrincipalName.Split('#')[0].Split('_')[$userPrincipalName.Split('#')[0].Split('_').Count - 1]).ToLower()
+            if ($b2bDomains.ContainsKey($b2bDomain)) {
+                $b2bDomains[$b2bDomain]++
+            }
+            else {
+                $b2bDomains.Add($b2bDomain, 1)
+            }
+        }
+        $b2bDomains.GetEnumerator() | Sort-Object
+    }
+}
+Export-ModuleMember -Function Get-IAAzureADGuestUserDomainsAsDictionary
+
 class IAUser {
     [string]$UserPrincipalName
     [string]$Enabled

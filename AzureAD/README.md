@@ -42,6 +42,33 @@ Returns a list of all users in Azure AD. A flag denotes those synchronsied from 
     #>
 ```
 
+### Get-IAAzureADGuestUserDomainsAsDictionary
+
+Returns a dictionary summation of Guests in Azure AD grouped by their domain.
+
+```powershell
+    <#
+    .SYNOPSIS
+    Returns the number of Guest (B2B) domains in the tenant.
+
+    .DESCRIPTION
+    Guests counts are group according to domain.
+    ie. where there are are two B2B users with user1@domain.com and user2@domain.com they will appear
+    as a count of '2' under domain.com
+
+    .EXAMPLE
+    Get-IAAzureADGuestUserDomainsAsDictionary
+
+    Key                 Value
+    ---                 -----
+    chrisdymond.org         1
+    chris.org              10
+    chris.net              13
+    .NOTES
+
+    #>
+```
+
 ## Groups
 
 ### Get-IAAzureADGroupsAsList
