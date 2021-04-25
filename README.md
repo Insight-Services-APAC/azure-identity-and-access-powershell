@@ -2,9 +2,9 @@
 
 This solution aims to provide an extended set of cmdlets for managing Identity & Access (IA) across Azure AD and Exchange Online.
 
-It intends to supplement the existing (Microsoft provided) AzureADPreview and ExchangeOnlineManagement cmdlets.
+It intends to supplement the existing Microsoft AzureADPreview and ExchangeOnlineManagement Modules.
 
-This library is a work in progress.
+This module is a work in progress.
 
 ## Backlog
 
