@@ -41,6 +41,10 @@ Where a specific feature is not exposed by these modules a native Graph API call
 
 ## [Azure AD](AzureAD/README.md)
 
+- Licensing
+
+  - [Retrieve the tenant's licensing summary; includes friendly license names (where available)](/AzureAD/README.md#Get-IAAzureADLicensesAsList)
+
 - Users
 
   - [Retrieve all (includes a UserType classification; User, Exchange, B2B)](/AzureAD/README.md#Get-IAAzureADUsersAsList)

@@ -28,6 +28,68 @@ function Assert-ExchangeOnlineConnected {
 
 # Exported member functions
 
+function Get-IAAzureADLicensesAsList {
+    <#
+    .SYNOPSIS
+    Returns the Azure AD license alllocation, including a friendly licensing name (where available) 
+  
+    .DESCRIPTION
+    Shows the SkuId, SkuPartNumber, FriendlyLicenseName, Total, Assigned, Available, Suspended and Warning counts
+    
+    .EXAMPLE
+    Get-IAAzureADLicensesAsList
+
+    SkuId               : 05e9a617-0261-4cee-bb44-138d3ef5d965
+    SkuPartNumber       : SPE_E3
+    FriendlyLicenseName : Microsoft 365 E3
+    Total               : 62
+    Assigned            : 60
+    Available           : 2
+    Suspended           : 0
+    Warning             : 0
+    
+    SkuId               : f30db892-07e9-47e9-837c-80727f46fd3d
+    SkuPartNumber       : FLOW_FREE
+    FriendlyLicenseName : Microsoft Power Automate Free
+    Total               : 10000
+    Assigned            : 10
+    Available           : 9990
+    Suspended           : 0
+    Warning             : 0
+
+    .NOTES
+    #>
+    [CmdletBinding()]
+    [OutputType([List[PSCustomObject]])]
+    param
+    (
+
+    )
+    process {
+        Assert-AzureADConnected
+        $importedSkuIdFriendlyNames = Import-Csv .\SkuIdFriendlyNames.csv
+        $friendlyLicenseNamesDictionary = [Dictionary[string, string]]::new()
+        $importedSkuIdFriendlyNames | ForEach-Object {
+            $friendlyLicenseNamesDictionary.Add($_.SkuId, $_.SkuIdFriendlyName)
+        }
+        $licenses = Get-AzureADSubscribedSku | Select-Object -Property Sku*, `
+        @{N = 'FriendlyLicenseName'; E = { '' } }, `
+        @{N = 'Total'; E = { $_.PrepaidUnits.'Enabled' } }, `
+        @{N = 'Assigned'; E = { $_.ConsumedUnits } }, `
+        @{N = 'Available'; E = { $_.PrepaidUnits.'Enabled' - $_.ConsumedUnits } }, `
+        @{N = 'Suspended'; E = { $_.PrepaidUnits.'Suspended' } }, `
+        @{N = 'Warning'; E = { $_.PrepaidUnits.'Warning' } }
+
+        $licenses | ForEach-Object {
+            if ($friendlyLicenseNamesDictionary.ContainsKey($_.SkuId)) {
+                $_.FriendlyLicenseName = $friendlyLicenseNamesDictionary[$_.SkuID]
+            }
+        }
+        $licenses
+    }
+}
+Export-ModuleMember -Function Get-IAAzureADLicensesAsList
+
 function Get-IAAzureADUserLastSignInAsDateTime {
     <#
     .SYNOPSIS
