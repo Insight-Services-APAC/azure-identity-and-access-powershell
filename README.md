@@ -36,14 +36,14 @@ Where a specific feature is not exposed by these modules a native Graph API call
 
 - Recipients
 
-  - How to retrieve all recipients and their current mailbox size (where applicable)
-  - How to retrieve recipients with the @tenant.onmicrosoft.com smtp address
+  - [Retrieve all (includes size where a mailbox)](/EXO/README.md#Get-IAEXORecipientsAsDictionary)
+  - [Retrieve all utilising the @tenant.onmicrosoft.com smtp address (proxyAddress)](/EXO/README.md#Get-IAEXORecipientsOnMicrosoftAsList)
 
 ## [Azure AD](AzureAD/README.md)
 
 - Users
 
-  - How to retrieve a list of all users in your tenant (includes a UserType breakdown; User, Exchange Object, B2B)
+  - [Retrieve all (includes a UserType classification; User, Exchange, B2B)](/AzureAD/README.md#Get-IAAzureADUsersAsList)
 
 - Groups
-  - How to retrieve a list of all groups in your organisation
+  - [Retrieve all (includes a GroupType classifcation; Security, Distribution or M365)](/AzureAD/README.md#Get-IAAzureADGroupsAsList)

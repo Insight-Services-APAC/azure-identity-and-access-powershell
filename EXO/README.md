@@ -59,7 +59,7 @@ Retrives all recipients and their size (where a mailbox).
     #>
 ```
 
-### Get-IAEXORecipientsOnMicrosoft
+### Get-IAEXORecipientsOnMicrosoftAsList
 
 Retrieve's all recipients with the @something.onmicrosoft.com smtp address.
 
@@ -72,7 +72,7 @@ Retrieve's all recipients with the @something.onmicrosoft.com smtp address.
     All recipients matching onmicrosoft.com are returned as a List.
 
     .EXAMPLE
-    $Results = Get-IAEXORecipientsOnMicrosoft
+    $Results = Get-IAEXORecipientsOnMicrosoftAsList
     $Results
 
     ...

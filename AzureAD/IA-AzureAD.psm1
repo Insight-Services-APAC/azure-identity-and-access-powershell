@@ -37,7 +37,7 @@ class IAUser {
     [string]$OnPremisesSyncEnabled = $true
 }
 
-function Get-IAAzureADUsers {
+function Get-IAAzureADUsersAsList {
     <#
     .SYNOPSIS
     Provides a complete list of user accounts in the tenant.
@@ -51,7 +51,7 @@ function Get-IAAzureADUsers {
     UPNs, Enabled state, Mail, UserType, MailboxType and a flag for on-premise synchronisation are included. 
     
     .EXAMPLE
-    Get-IAAzureADUsers
+    Get-IAAzureADUsersAsList
 
     UserPrincipalName     : chris.dymond@domain.com
     Enabled               : True
@@ -110,7 +110,7 @@ function Get-IAAzureADUsers {
         $iaUsersList | Sort-Object DisplayName
     }
 }
-Export-ModuleMember -Function Get-IAAzureADUsers
+Export-ModuleMember -Function Get-IAAzureADUsersAsList
 
 class IAGroup {
     [string]$DisplayName
@@ -120,7 +120,7 @@ class IAGroup {
     [string]$Owners
 }
 
-function Get-IAAzureADGroups {
+function Get-IAAzureADGroupsAsList {
     <#
     .SYNOPSIS
     Returns a list of all groups in Azure AD.
@@ -187,4 +187,4 @@ function Get-IAAzureADGroups {
         $iaGroupList | Sort-Object Displayname
     }
 }
-Export-ModuleMember -Function Get-IAAzureADGroups
+Export-ModuleMember -Function Get-IAAzureADGroupsAsList

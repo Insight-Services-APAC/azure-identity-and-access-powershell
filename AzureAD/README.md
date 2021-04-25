@@ -2,7 +2,7 @@
 
 ## Users
 
-### Get-IAAzureADUsers
+### Get-IAAzureADUsersAsList
 
 Returns a list of all users in Azure AD. A flag denotes those synchronsied from on-premise.
 
@@ -20,7 +20,7 @@ Returns a list of all users in Azure AD. A flag denotes those synchronsied from 
     UPNs, Enabled state, Mail, UserType, MailboxType and a flag for on-premise synchronisation are included.
 
     .EXAMPLE
-    Get-IAAzureADUsers
+    Get-IAAzureADUsersAsList
 
     UserPrincipalName     : chris.dymond@domain.com
     Enabled               : True
@@ -44,7 +44,7 @@ Returns a list of all users in Azure AD. A flag denotes those synchronsied from 
 
 ## Groups
 
-### Get-IAAzureADGroups
+### Get-IAAzureADGroupsAsList
 
 Returns a list of all groups in Azure AD. A flag denotes those synchronsied from on-premise.
 
@@ -58,7 +58,7 @@ Returns a list of all groups in Azure AD. A flag denotes those synchronsied from
     whether the group is synchronised from on-premise and a list of group owners (where defined in Azure)
 
     .EXAMPLE
-    Get-IAAzureADGroups
+    Get-IAAzureADGroupsAsList
 
     DisplayName           : Chris' Security Group
     Mail                  :

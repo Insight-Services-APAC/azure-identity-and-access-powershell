@@ -19,7 +19,7 @@ function Assert-ExchangeOnlineConnected {
 
 # Exported member functions
 
-function Get-IAEXORecipientsOnMicrosoft {
+function Get-IAEXORecipientsOnMicrosoftAsList {
     <#
     .SYNOPSIS
     Returns all recipients with the @tenant.onmicrosoft.com suffix.
@@ -28,7 +28,7 @@ function Get-IAEXORecipientsOnMicrosoft {
     All recipients matching onmicrosoft.com are returned as a List.
     
     .EXAMPLE
-    $Results = Get-IAEXORecipientsOnMicrosoft
+    $Results = Get-IAEXORecipientsOnMicrosoftAsList
     $Results
 
     ...
@@ -67,7 +67,7 @@ function Get-IAEXORecipientsOnMicrosoft {
         $onMicrosoftSmtpObjects
     }
 }
-Export-ModuleMember -Function Get-IAEXORecipientsOnMicrosoft
+Export-ModuleMember -Function Get-IAEXORecipientsOnMicrosoftAsList
 
 class IARecipients {
     [string]$CombinedSizeInGB
