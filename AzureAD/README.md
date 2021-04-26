@@ -39,6 +39,48 @@ Presents the current licensing for the tenant.
     #>
 ```
 
+### Get-IAAzureADLicensesWithUsersAsList
+
+Returns the Azure AD licenses as they apply to users.
+Licenses are grouped by their enabled features.
+
+```powershell
+<#
+    .SYNOPSIS
+    Returns the Azure AD license information as it applies to users.
+
+    .DESCRIPTION
+    Licenses are grouped by their enabled plan features and provide a list of affected users.
+    This is useful when determining how many license plan feature variations are in play.
+
+    .EXAMPLE
+    Get-IAAzureADLicensesWithUsersAsList
+
+    LicenseName       : Microsoft 365 E3
+    SkuPartNumber     : SPE_E3
+    DisabledPlanCount : 18
+    DisabledPlanNames : {Azure Active Directory Premium P1, Azure Information Protection Premium P1, Azure Rights Management, Cloud App Security Discovery...}
+    UserCount         : 1
+    Users             : {chris.dymond1@domain.com}
+
+    LicenseName       : Microsoft 365 E3
+    SkuPartNumber     : SPE_E3
+    DisabledPlanCount : 8
+    DisabledPlanNames : {Azure Rights Management, Microsoft Azure Multi-Factor Authentication, Office for the web, Power Apps for Office 365...}
+    UserCount         : 2
+    Users             : {chris.dymond2@domain.com, chris.dymond3@domain.com}
+
+    LicenseName       : Microsoft Power Automate Free
+    SkuPartNumber     : FLOW_FREE
+    DisabledPlanCount : 0
+    DisabledPlanNames :
+    UserCount         : 3
+    Users             : {chris.dymond1@domain.com, chris.dymond2@domain.com, chris.dymond3@domain.com}
+
+    .NOTES
+    #>
+```
+
 ## Users
 
 ### Get-IAAzureADUsersAsList

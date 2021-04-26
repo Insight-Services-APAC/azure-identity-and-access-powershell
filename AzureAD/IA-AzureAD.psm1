@@ -4,6 +4,7 @@
 
 using namespace System.Collections.Generic
 using namespace Microsoft.Open.Azure.AD.CommonLibrary
+using namespace Microsoft.Open.AzureAD.Model
 $ErrorActionPreference = "Stop"
 
 # Private member functions
@@ -26,7 +27,140 @@ function Assert-ExchangeOnlineConnected {
     }
 }
 
+function GetLicenseAsDictionaryKey([PSCustomObject] $AssignedLicense) {
+    # Licenses are either fully enabled or have some service plan features disabled
+    # This function just generates a key to represent a distinct license and the features disabled
+    $licenseIndexKey = $AssignedLicense.SkuId
+    if ($AssignedLicense.DisabledPlans) {
+        $licenseIndexKey += ' DisabledPlans'
+        $AssignedLicense.DisabledPlans = $AssignedLicense.DisabledPlans | Sort-Object
+        $AssignedLicense.DisabledPLans | ForEach-Object { $LicenseIndexKey += ';' + $_ }
+    }
+    $licenseIndexKey
+}
+
 # Exported member functions
+
+class IALicenseGroup {
+    [string]$LicenseName
+    [string]$SkuPartNumber
+    [int]$DisabledPlanCount
+    [List[string]] $DisabledPlanNames = [List[string]]::new()
+    [int]$UserCount
+    [List[string]] $Users = [List[string]]::new()
+}
+
+function Get-IAAzureADLicensesWithUsersAsList {
+    <#
+    .SYNOPSIS
+    Returns the Azure AD license information as it applies to users. 
+  
+    .DESCRIPTION
+    Licenses are grouped by their enabled plan features and provide a list of affected users. 
+    This is useful when determining how many license plan feature variations are in play.
+    
+    .EXAMPLE
+    Get-IAAzureADLicensesWithUsersAsList
+
+    LicenseName       : Microsoft 365 E3
+    SkuPartNumber     : SPE_E3
+    DisabledPlanCount : 18
+    DisabledPlanNames : {Azure Active Directory Premium P1, Azure Information Protection Premium P1, Azure Rights Management, Cloud App Security Discovery...}
+    UserCount         : 1
+    Users             : {chris.dymond1@domain.com}
+
+    LicenseName       : Microsoft 365 E3
+    SkuPartNumber     : SPE_E3
+    DisabledPlanCount : 8
+    DisabledPlanNames : {Azure Rights Management, Microsoft Azure Multi-Factor Authentication, Office for the web, Power Apps for Office 365...}
+    UserCount         : 2
+    Users             : {chris.dymond2@domain.com, chris.dymond3@domain.com}
+
+    LicenseName       : Microsoft Power Automate Free
+    SkuPartNumber     : FLOW_FREE
+    DisabledPlanCount : 0
+    DisabledPlanNames :
+    UserCount         : 3
+    Users             : {chris.dymond1@domain.com, chris.dymond2@domain.com, chris.dymond3@domain.com}
+
+    .NOTES
+    #>
+    [CmdletBinding()]
+    [OutputType([List[IALicenseGroup]])]
+    param
+    (
+
+    )
+    process {
+        Assert-AzureADConnected
+        $importedSkuIdFriendlyNames = Import-Csv ([System.IO.Path]::Combine($PSScriptRoot, 'resources\SkuIdFriendlyNames.csv'))
+        $friendlyLicenseNamesDictionary = [Dictionary[string, string]]::new()
+        $importedSkuIdFriendlyNames | ForEach-Object {
+            $friendlyLicenseNamesDictionary.Add($_.SkuId, $_.SkuIdFriendlyName)
+        }
+        $importedPlanIdFriendlyNames = Import-Csv ([System.IO.Path]::Combine($PSScriptRoot, 'resources\PlanIdFriendlyNames.csv'))
+        $friendlyPlanNamesDictionary = [Dictionary[string, string]]::new()
+        $importedPlanIdFriendlyNames | ForEach-Object {
+            $friendlyPlanNamesDictionary.Add($_.PlanId, $_.PlanIdFriendlyName)
+        }
+        $iaLicenseGroupDictionary = [Dictionary[string, IALicenseGroup]]::new()
+        $licensedUsers = [Dictionary[string, DirectoryObject]]::new()
+        Get-AzureAdUser -All $true | ForEach-Object {
+            $licensed = $False
+            For ($i = 0; $i -le ($_.AssignedLicenses | Measure-Object).Count ; $i++) {
+                If ( [string]::IsNullOrEmpty(  $_.AssignedLicenses[$i].SkuId ) -ne $True) { $licensed = $true } 
+            }
+            If ($licensed -eq $true) {
+                $licensedUsers.Add($_.UserPrincipalName, $_)
+                foreach ($assignedLicense in $_.AssignedLicenses) {
+                    $licenseWithDisabledPlansKey = GetLicenseAsDictionaryKey($assignedLicense)
+                    if ($iaLicenseGroupDictionary.ContainsKey($licenseWithDisabledPlansKey)) {
+                        $currentCount = $iaLicenseGroupDictionary[$licenseWithDisabledPlansKey].UserCount
+                        $iaLicenseGroupDictionary[$licenseWithDisabledPlansKey].UserCount = $currentCount + 1;
+                        $iaLicenseGroupDictionary[$licenseWithDisabledPlansKey].Users.Add($_.UserPrincipalName)
+                    }
+                    else {
+                        $disabledPlanNames = [List[string]]::new()
+                        if ($assignedLicense.DisabledPlans) {
+                            $assignedLicense.DisabledPlans = $AssignedLicense.DisabledPlans | Sort-Object
+                            $assignedLicense.DisabledPlans | ForEach-Object {
+                                if ($friendlyPlanNamesDictionary.ContainsKey($_)) {
+                                    $disabledPlanNames.Add($friendlyPlanNamesDictionary[$_])
+                                }
+                                else {
+                                    $disabledPlanNames.Add($_)
+                                }
+                            }
+                        }
+                        $iaLicenseGroup = [IALicenseGroup]::new()
+                        $iaLicenseGroup.DisabledPlanNames = $disabledPlanNames | Sort-Object
+                        $iaLicenseGroup.DisabledPlanCount = $disabledPlanNames.Count
+                        $iaLicenseGroup.UserCount = 1
+                        if ($friendlyLicenseNamesDictionary.ContainsKey($assignedLicense.SkuId)) {
+                            $iaLicenseGroup.LicenseName = $friendlyLicenseNamesDictionary[$assignedLicense.SkuId]
+                        }
+                        $skuPartNumber = Get-IAAzureADLicensesAsList | Where-Object { $_.SkuId -eq $AssignedLicense.SkuId } | Select-Object -ExpandProperty SkuPartNumber
+                        $iaLicenseGroup.SkuPartNumber = $skuPartNumber
+                        $iaLicenseGroup.Users.Add($_.UserPrincipalName)
+                        $iaLicenseGroupDictionary.Add($licenseWithDisabledPlansKey, $iaLicenseGroup)
+                    }
+                }
+            } 
+        }
+        $licensesWithUsersAsList = $iaLicenseGroupDictionary.GetEnumerator() | ForEach-Object {
+            $_.Value | Select-Object LicenseName, SkuPartNumber, DisabledPlanCount, DisabledPlanNames, UserCount, Users
+        }
+        # CSV formatting - TODO: this will become a Parameter switch 
+        # $licensesWithUsersAsList = $iaLicenseGroupDictionary.GetEnumerator() | ForEach-Object {
+        #     $_.Value | Select-Object LicenseName, DisabledPlanCount, `
+        #     @{name = "DisabledPlans"; expression = { $_.DisabledPlanNames -join ', ' } }, `
+        #         UserCount, `
+        #     @{name = "Users"; expression = { $_.Users -join ', ' } }
+        # }
+        $licensesWithUsersAsList
+    }
+}
+Export-ModuleMember -Function Get-IAAzureADLicensesWithUsersAsList
 
 function Get-IAAzureADLicensesAsList {
     <#
@@ -67,7 +201,7 @@ function Get-IAAzureADLicensesAsList {
     )
     process {
         Assert-AzureADConnected
-        $importedSkuIdFriendlyNames = Import-Csv .\SkuIdFriendlyNames.csv
+        $importedSkuIdFriendlyNames = Import-Csv ([System.IO.Path]::Combine($PSScriptRoot, "resources\SkuIdFriendlyNames.csv"))
         $friendlyLicenseNamesDictionary = [Dictionary[string, string]]::new()
         $importedSkuIdFriendlyNames | ForEach-Object {
             $friendlyLicenseNamesDictionary.Add($_.SkuId, $_.SkuIdFriendlyName)
