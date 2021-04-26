@@ -39,7 +39,63 @@ function GetLicenseAsDictionaryKey([PSCustomObject] $AssignedLicense) {
     $licenseIndexKey
 }
 
+function Send-MSGraphGetRequest {
+    [CmdletBinding()]
+    [OutputType([List[PSCustomObject]])]
+    param
+    (
+        [Parameter(
+            Mandatory = $true,
+            ValueFromPipelineByPropertyName = $true,
+            Position = 0)]
+        [String] $GraphUrl
+    )
+    process {
+        Get-AzureADMSAdministrativeUnit -Top 1 | Out-Null # Just to ensure we have a graph.microsoft.com token (not just a graph.windows.net one)
+        $graphToken = [AzureSession]::TokenCache.ReadItems() | `
+            Where-Object { $_.Resource -eq 'https://graph.microsoft.com' } | Select-Object AccessToken
+        if ($null -eq $graphToken) {
+            throw "The Graph Access token is not available!"
+        }
+        $graphRequest = @{
+            Uri     = $GraphUrl
+            Headers = @{
+                'Authorization' = "Bearer $($graphToken.AccessToken)" 
+            }
+            Method  = 'GET'
+        }
+        $resultList = [List[PSCustomObject]]::new()
+        $response = Invoke-RestMethod @graphRequest
+        $response.Value | ForEach-Object {
+            $resultList.Add($_)
+        }
+        while ($null -ne $response.'@odata.nextLink') {
+            $graphRequest.Uri = $response.'@odata.nextLink' 
+            $response = Invoke-RestMethod @graphRequest
+            $response.Value | ForEach-Object {
+                $resultList.Add($_)
+            }   
+        }
+        $resultList
+    }
+}
+
 # Exported member functions
+
+function Experimental {
+    
+    # Get the names and ids of groups that have assigned license plans
+    $attributesToSelect = @(
+        'id'
+        'displayName'
+        'assignedLicenses'
+        'onPremisesSyncEnabled'
+    )
+    $selectData = $attributesToSelect -join ','
+    $graphUri = 'https://graph.microsoft.com/beta/groups?$select=' + $selectData
+    Send-MSGraphGetRequest $graphUri | Where-Object { $_.AssignedLicenses.Count -gt 0 }
+}
+Export-ModuleMember -Function Experimental
 
 class IALicenseGroup {
     [string]$LicenseName
@@ -445,8 +501,8 @@ function Get-IAAzureADGroupsAsList {
         $iaGroupList = [List[IAGroup]]::new()
         $groups = Get-AzureADMSGroup -All $true
         $groups | ForEach-Object {
-            #  $_.OnPremisesSyncEnabled can return true or (false or null)
-            # This sanitises the result
+            #  $_.OnPremisesSyncEnabled can return true or (false or null) - this is wrong 
+            # Sanitising the result
             $OnPremisesSyncEnabled = $null
             if ($_.OnPremisesSyncEnabled -eq $true) {
                 $onPremisesSyncEnabled = $true
@@ -459,17 +515,20 @@ function Get-IAAzureADGroupsAsList {
             $iaGroup.Owners = (Get-AzureADGroupOwner -ObjectId $_.Id -All $true | Select-Object -ExpandProperty UserPrincipalName) -join ', '
             $iaGroup.DisplayName = $_.DisplayName
             $iaGroup.Mail = $_.Mail
-            If ($_.GroupTypes[0] -eq "Unified") {
+            If ($_.GroupTypes -contains "Unified") {
                 $iaGroup.Type = "Microsoft 365"
             }
             elseif ($_.SecurityEnabled -and $_.MailEnabled -eq $false  ) {
                 $iaGroup.Type = "Security"  
             }
             elseif ($_.SecurityEnabled -and $_.MailEnabled ) {
-                $iaGroup.Type = "Mail-enabled Security"  
+                $iaGroup.Type = "Mail-Enabled Security"  
             }
             else {
                 $iaGroup.Type = "Distribution"
+            }
+            If ($_.GroupTypes -contains "DynamicMembership") {
+                $iaGroup.Type += " (Dynamic)"
             }
             $iaGroupList.Add($iaGroup)
         }
