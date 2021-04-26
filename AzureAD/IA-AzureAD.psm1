@@ -462,8 +462,11 @@ function Get-IAAzureADGroupsAsList {
             If ($_.GroupTypes[0] -eq "Unified") {
                 $iaGroup.Type = "Microsoft 365"
             }
-            elseif ($_.SecurityEnabled  ) {
+            elseif ($_.SecurityEnabled -and $_.MailEnabled -eq $false  ) {
                 $iaGroup.Type = "Security"  
+            }
+            elseif ($_.SecurityEnabled -and $_.MailEnabled ) {
+                $iaGroup.Type = "Mail-enabled Security"  
             }
             else {
                 $iaGroup.Type = "Distribution"
