@@ -2,18 +2,20 @@
 
 Hello and welcome,
 
-I'm Chris Dymond, a Cloud Technical Specialist with a keen interest in managing aspects of Microsoft Azure via PowerShell.
+I'm Chris, a Cloud Technical Specialist with Insight.
 
-I've written this repository with the aim to provide scenario-based cmdlets that both extend and enhance the AzureADPreview and ExchangeOnlineManagement modules.
+I have a keen interest in all things Azure but especially Identity and Access and how PowerShell can streamline tasks.
 
-Using this module you'll be able to answer questions like:
+I have written this repository with a view to provide scenario-based cmdlets that both extend and enhance the AzureADPreview and ExchangeOnlineManagement cmdlets.
 
-- Which of my users currently have licensing applied?
+Using my IA functions you'll be able to answer questions like the below:
+
+- What type of licensing is applied to my users?
 - When was the last sign-in of user 'x'?
 - What is the total size of all my Exchange Online mailboxes?
-- How many groups do I have, what kind are they and who owns them?
+- How many groups do I have and what kind are they?
 
-Please note that the 'IA' module, as I'm calling it, is a work in progress.
+Please note that this 'IA' module, as I've called it, is a work in progress and will change regularly.
 
 # Updates
 
@@ -24,13 +26,13 @@ Please note that the 'IA' module, as I'm calling it, is a work in progress.
 - Custom MS Graph Calls :
   - Read MFA status, to achieve similiar results to MSOnline (msol) cmdlets
 
-@Author Chris Dymond
+Author: Chris Dymond
 
 chris.dymond@insight.com
 
 https://www.linkedin.com/in/chris-dymond/
 
-# Referencing the IA module
+# Using the IA module
 
 To use any of these cmdlets you must import this module.
 
@@ -47,18 +49,43 @@ Install-Module ExchangeOnlineManagement
 
 Where a specific feature is not exposed by these modules a native Graph API call may suffice and be included in the IA library.
 
-# Scenario Based
+# Contents
 
-## [Exchange Online](EXO/README.md)
+## Exchange Online
 
-### Recipients
+- [Recipients](#Recipients)
 
-[Get-IAEXORecipientsOnMicrosoftAsList](/EXO/README.md#Get-IAEXORecipientsOnMicrosoftAsList)
+  - [Get-IAEXORecipientsOnMicrosoftAsList](#Get-IAEXORecipientsOnMicrosoftAsList)
+  - [Get-IAEXORecipientsAsDictionary](#Get-IAEXORecipientsAsDictionary)
+
+## Azure AD
+
+- [Licensing](#Licensing)
+
+  - [Get-IAAzureADLicensesAsList](#Get-IAAzureADLicensesAsList)
+  - [Get-IAAzureADLicensesWithUsersAsList](#Get-IAAzureADLicensesWithUsersAsList)
+
+- [Users](#Users)
+
+  - [Get-IAAzureADUsersAsList](#Get-IAAzureADLicensesAsList)
+  - [Get-IAAzureADGuestUserDomainsAsDictionary](#Get-IAAzureADGuestUserDomainsAsDictionary)
+  - [Get-IAAzureADUserLastSignInAsDateTime](#Get-IAAzureADUserLastSignInAsDateTime)
+
+- [Groups](#Groups)
+
+  - [Get-IAAzureADGroupsAsList](#Get-IAAzureADGroupsAsList)
+
+- Miscellaneous
+
+# [Exchange Online](EXO/README.md)
+
+## Recipients
+
+### Get-IAEXORecipientsOnMicrosoftAsList
 
 This will retrieve all Exchange Online recipients with an @tenant.onmicrosoft.com proxyAddress
 
 ```powershell
-.EXAMPLE
   $Results = Get-IAEXORecipientsOnMicrosoftAsList
   $Results
   ...
@@ -77,7 +104,7 @@ This will retrieve all Exchange Online recipients with an @tenant.onmicrosoft.co
   ...
 ```
 
-[Get-IAEXORecipientsAsDictionary](/EXO/README.md#Get-IAEXORecipientsAsDictionary)
+### Get-IAEXORecipientsAsDictionary
 
 This will retrieve all Exchange Online recipients and index them by their recipient recipientTypeDetail.
 
@@ -120,18 +147,136 @@ It includes combined size (where applicable)
   TotalItemSizeInGB         : 1.24
   ...
 ```
-## [Azure AD](AzureAD/README.md)
 
-- Licensing
+# [Azure AD](AzureAD/README.md)
 
-  - [Retrieve summary; includes friendly license names (where available)](/AzureAD/README.md#Get-IAAzureADLicensesAsList)
-  - [Retrieve as it applies to individual accounts](/AzureAD/README.md#Get-IAAzureADLicensesWithUsersAsList)
+## Licensing
 
-- Users
+### Get-IAAzureADLicensesAsList
 
-  - [Retrieve all (includes a UserType classification; User, Exchange, B2B)](/AzureAD/README.md#Get-IAAzureADUsersAsList)
-  - [Retrieve all B2B domains in the tenant as well as their user count](/AzureAD/README.md#Get-IAAzureADGuestUserDomainsAsDictionary)
-  - [Get the date and time of the last successful sign in of a user](/AzureAD/README.md#Get-IAAzureADUserLastSignInAsDateTime)
+This returns this list of licenses and their current allocation.
 
-- Groups
-  - [Retrieve all (includes a GroupType classifcation; Security, Mail-Enabled Security, Distribution, Microsoft 365, Dynamic, Licensing)](/AzureAD/README.md#Get-IAAzureADGroupsAsList)
+A referenced CSV includes the SkuId to Friendly Name conversion.
+
+```powershell
+    Get-IAAzureADLicensesAsList
+
+    SkuId               : 05e9a617-0261-4cee-bb44-138d3ef5d965
+    SkuPartNumber       : SPE_E3
+    FriendlyLicenseName : Microsoft 365 E3
+    Total               : 62
+    Assigned            : 60
+    Available           : 2
+    Suspended           : 0
+    Warning             : 0
+
+    SkuId               : f30db892-07e9-47e9-837c-80727f46fd3d
+    SkuPartNumber       : FLOW_FREE
+    FriendlyLicenseName : Microsoft Power Automate Free
+    Total               : 10000
+    Assigned            : 10
+    Available           : 9990
+    Suspended           : 0
+    Warning             : 0
+```
+
+### Get-IAAzureADLicensesWithUsersAsList
+
+This cmdlet returns all licensing as it applies to individual accounts. The results will be grouped according to plan features enabled and their assignment path (direct or via group).
+
+```powershell
+Get-IAAzureADLicensesWithUsersAsList
+    ...
+    LicenseName              : Microsoft 365 E3
+    SkuPartNumber            : SPE_E3
+    DisabledPlanCount        : 8
+    DisabledPlanNames        : {Azure Rights Management, Microsoft Azure Multi-Factor Authentication,...}
+    DirectAssignmentPath     : False
+    InheritedAssignmentPaths : {Some Group - O365, Another Group - O365}
+    UserCount                : 1
+    Users                    : {chris.dymond@domain.com}
+
+    LicenseName              : Microsoft 365 E3
+    SkuPartNumber            : SPE_E3
+    DisabledPlanCount        : 18
+    DisabledPlanNames        : {Azure Active Directory Premium P1, Azure Information Protection Premium P1,...}
+    DirectAssignmentPath     : True
+    InheritedAssignmentPaths : {}
+    UserCount                : 2
+    Users                    : {chris.dymond2@domain.com, chris.dymond3@domain.com}
+    ...
+```
+
+## Users
+
+### Get-IAAzureADUsersAsList
+
+The standard Get-AzureADUsers cmdlet returns all accounts including shared mailboxes and resources.
+This function returns the same set of users but classifies them as either User, B2B or Exchange (short for Exchange Online).
+
+```powershell
+    Get-IAAzureADUsersAsList
+
+    UserPrincipalName     : chris.dymond@domain.com
+    Enabled               : True
+    Mail                  : chris.dymond@domain.com
+    UserType              : User
+    RecipientType         : UserMailbox
+    OnPremisesSyncEnabled : True
+
+    UserPrincipalName     : BoardRoom@chrisdymond.onmicrosoft.com
+    Enabled               : True
+    Mail                  : BoardRoom@domain.com
+    UserType              : Exchange
+    RecipientType         : RoomMailbox
+    OnPremisesSyncEnabled : False
+```
+
+### Get-IAAzureADGuestUserDomainsAsDictionary
+
+Returns the count of Guest users by their domain.
+
+```powershell
+    Get-IAAzureADGuestUserDomainsAsDictionary
+
+    Key                 Value
+    ---                 -----
+    chrisdymond.org         1
+    chris.org              10
+    chris.net              13
+```
+
+### Get-IAAzureADUserLastSignInAsDateTime
+
+Returns the last successful time a user authenticated to Azure.
+
+(Adjusted to local time)
+
+```powershell
+    Get-IAAzureADUserLastSignInAsDateTime 'chris.dymond@domain.com'
+
+    Sunday, 25 April 2021 3:34:34 PM
+```
+
+## Groups
+
+### Get-IAAzureADGroupsAsList
+
+This returns a list of all groups. It includes the type: Security, Mail-Enabled Security, Distribution and Microsoft 365. It also includes whether the group is dynamic or is used for licensing.
+
+```powershell
+    Get-IAAzureADGroups
+
+    DisplayName           : Chris' Security Group
+    Mail                  :
+    Type                  : Security, Licensing
+    OnPremisesSyncEnabled : True
+    Owners                :
+
+
+    DisplayName           : Chris' M365 Group
+    Mail                  : ChrisGroup@domain.onmicrosoft.com
+    Type                  : Microsoft 365
+    OnPremisesSyncEnabled : False
+    Owners                : chris.dymond@domain.com
+```

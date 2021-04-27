@@ -134,7 +134,7 @@ function Get-IAAzureADLicensesWithUsersAsList {
     DisabledPlanCount        : 8
     DisabledPlanNames        : {Azure Rights Management, Microsoft Azure Multi-Factor Authentication, Office for the web, Power Apps for Office 365...}
     DirectAssignmentPath     : False
-    InheritedAssignmentPaths : {Some Group - O365 Licence - Planner, Some Group - O365 Licence}
+    InheritedAssignmentPaths : {Some Group - O365, Another Group - O365}
     UserCount                : 1
     Users                    : {chris.dymond@domain.com}
 
