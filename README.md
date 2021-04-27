@@ -66,4 +66,4 @@ Where a specific feature is not exposed by these modules a native Graph API call
   - [Get the date and time of the last successful sign in of a user](/AzureAD/README.md#Get-IAAzureADUserLastSignInAsDateTime)
 
 - Groups
-  - [Retrieve all (includes a GroupType classifcation; Security, Distribution or Microsoft 365)](/AzureAD/README.md#Get-IAAzureADGroupsAsList)
+  - [Retrieve all (includes a GroupType classifcation; Security, Mail-Enabled Security, Distribution, Microsoft 365, Dynamic, Licensing)](/AzureAD/README.md#Get-IAAzureADGroupsAsList)
