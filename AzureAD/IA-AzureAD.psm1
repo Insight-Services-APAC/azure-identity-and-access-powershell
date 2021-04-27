@@ -27,7 +27,7 @@ function Assert-ExchangeOnlineConnected {
     }
 }
 
-function GetLicenseAsDictionaryKey([PSCustomObject] $AssignedLicense) {
+function Get-LicenseAssignmentAsDictionaryKey([PSCustomObject] $AssignedLicense) {
     # Licenses are either fully enabled or have some service plan features disabled
     # This function just generates a key to represent a distinct license and the features disabled
     $licenseIndexKey = $AssignedLicense.SkuId
@@ -36,8 +36,17 @@ function GetLicenseAsDictionaryKey([PSCustomObject] $AssignedLicense) {
         $AssignedLicense.DisabledPlans = $AssignedLicense.DisabledPlans | Sort-Object
         $AssignedLicense.DisabledPLans | ForEach-Object { $LicenseIndexKey += ';' + $_ }
     }
+    if ($AssignedLicense.AppliedByGroups) {
+        $licenseIndexKey += ' Groups'
+        $AssignedLicense.AppliedByGroups = $AssignedLicense.AppliedByGroups | Sort-Object
+        $AssignedLicense.AppliedByGroups | ForEach-Object { $LicenseIndexKey += ';' + $_ }
+    }
+    if ($AssignedLicense.AppliedDirectly) {
+        $licenseIndexKey += ' Direct'
+    }
     $licenseIndexKey
 }
+
 
 function Send-MSGraphGetRequest {
     [CmdletBinding()]
@@ -87,13 +96,11 @@ function Experimental {
     # Get the names and ids of groups that have assigned license plans
     $attributesToSelect = @(
         'id'
-        'displayName'
-        'assignedLicenses'
-        'onPremisesSyncEnabled'
+        'licenseAssignmentStates'
     )
     $selectData = $attributesToSelect -join ','
-    $graphUri = 'https://graph.microsoft.com/beta/groups?$select=' + $selectData
-    Send-MSGraphGetRequest $graphUri | Where-Object { $_.AssignedLicenses.Count -gt 0 }
+    $graphUri = 'https://graph.microsoft.com/beta/users?$select=' + $selectData
+    Send-MSGraphGetRequest $graphUri | Where-Object { $_.licenseAssignmentStates.Count -gt 0 }
 }
 Export-ModuleMember -Function Experimental
 
@@ -101,9 +108,11 @@ class IALicenseGroup {
     [string]$LicenseName
     [string]$SkuPartNumber
     [int]$DisabledPlanCount
-    [List[string]] $DisabledPlanNames = [List[string]]::new()
+    [List[string]]$DisabledPlanNames = [List[string]]::new()
+    [bool]$DirectAssignmentPath
+    [List[string]]$InheritedAssignmentPaths = [List[string]]::new()
     [int]$UserCount
-    [List[string]] $Users = [List[string]]::new()
+    [List[string]]$Users = [List[string]]::new()
 }
 
 function Get-IAAzureADLicensesWithUsersAsList {
@@ -115,29 +124,28 @@ function Get-IAAzureADLicensesWithUsersAsList {
     Licenses are grouped by their enabled plan features and provide a list of affected users. 
     This is useful when determining how many license plan feature variations are in play.
     
+    Update - Added license assignment paths via Graph
+
     .EXAMPLE
     Get-IAAzureADLicensesWithUsersAsList
 
-    LicenseName       : Microsoft 365 E3
-    SkuPartNumber     : SPE_E3
-    DisabledPlanCount : 18
-    DisabledPlanNames : {Azure Active Directory Premium P1, Azure Information Protection Premium P1, Azure Rights Management, Cloud App Security Discovery...}
-    UserCount         : 1
-    Users             : {chris.dymond1@domain.com}
+    LicenseName              : Microsoft 365 E3
+    SkuPartNumber            : SPE_E3
+    DisabledPlanCount        : 8
+    DisabledPlanNames        : {Azure Rights Management, Microsoft Azure Multi-Factor Authentication, Office for the web, Power Apps for Office 365...}
+    DirectAssignmentPath     : False
+    InheritedAssignmentPaths : {Some Group - O365 Licence - Planner, Some Group - O365 Licence}
+    UserCount                : 1
+    Users                    : {chris.dymond@domain.com}
 
-    LicenseName       : Microsoft 365 E3
-    SkuPartNumber     : SPE_E3
-    DisabledPlanCount : 8
-    DisabledPlanNames : {Azure Rights Management, Microsoft Azure Multi-Factor Authentication, Office for the web, Power Apps for Office 365...}
-    UserCount         : 2
-    Users             : {chris.dymond2@domain.com, chris.dymond3@domain.com}
-
-    LicenseName       : Microsoft Power Automate Free
-    SkuPartNumber     : FLOW_FREE
-    DisabledPlanCount : 0
-    DisabledPlanNames :
-    UserCount         : 3
-    Users             : {chris.dymond1@domain.com, chris.dymond2@domain.com, chris.dymond3@domain.com}
+    LicenseName              : Microsoft 365 E3
+    SkuPartNumber            : SPE_E3
+    DisabledPlanCount        : 18
+    DisabledPlanNames        : {Azure Active Directory Premium P1, Azure Information Protection Premium P1, Azure Rights Management, Cloud App Security Discovery...}
+    DirectAssignmentPath     : True
+    InheritedAssignmentPaths : {}
+    UserCount                : 2
+    Users                    : {chris.dymond2@domain.com, chris.dymond3@domain.com}
 
     .NOTES
     #>
@@ -149,6 +157,14 @@ function Get-IAAzureADLicensesWithUsersAsList {
     )
     process {
         Assert-AzureADConnected
+        $attributesToSelect = @(
+            'id'
+            'displayName'
+            'assignedLicenses'
+        )
+        $selectData = $attributesToSelect -join ','
+        $graphUri = 'https://graph.microsoft.com/beta/groups?$select=' + $selectData
+        $groupsWithAssignedLicenses = Send-MSGraphGetRequest $graphUri | Where-Object { $_.AssignedLicenses.Count -gt 0 }
         $importedSkuIdFriendlyNames = Import-Csv ([System.IO.Path]::Combine($PSScriptRoot, 'resources\SkuIdFriendlyNames.csv'))
         $friendlyLicenseNamesDictionary = [Dictionary[string, string]]::new()
         $importedSkuIdFriendlyNames | ForEach-Object {
@@ -160,16 +176,45 @@ function Get-IAAzureADLicensesWithUsersAsList {
             $friendlyPlanNamesDictionary.Add($_.PlanId, $_.PlanIdFriendlyName)
         }
         $iaLicenseGroupDictionary = [Dictionary[string, IALicenseGroup]]::new()
-        $licensedUsers = [Dictionary[string, DirectoryObject]]::new()
-        Get-AzureAdUser -All $true | ForEach-Object {
+        $licensedUsers = [Dictionary[string, PSCustomObject]]::new()
+        $attributesToSelect = @(
+            'id'
+            'userPrincipalName'
+            'licenseAssignmentStates'
+            'assignedLicenses'
+        )
+        $selectData = $attributesToSelect -join ','
+        $graphUrl = 'https://graph.microsoft.com/beta/users?$select=' + $selectData
+        Send-MSGraphGetRequest $graphUrl | ForEach-Object {
             $licensed = $False
             For ($i = 0; $i -le ($_.AssignedLicenses | Measure-Object).Count ; $i++) {
                 If ( [string]::IsNullOrEmpty(  $_.AssignedLicenses[$i].SkuId ) -ne $True) { $licensed = $true } 
             }
             If ($licensed -eq $true) {
                 $licensedUsers.Add($_.UserPrincipalName, $_)
+                
                 foreach ($assignedLicense in $_.AssignedLicenses) {
-                    $licenseWithDisabledPlansKey = GetLicenseAsDictionaryKey($assignedLicense)
+                    $groupAssignedSku = [Linq.Enumerable]::ToList([Linq.Enumerable]::Where($_.licenseAssignmentStates, `
+                                [Func[Object, bool]] { param($x); return ($x.SkuId -eq $assignedLicense.SkuId) `
+                                    -and ($x.state -eq 'Active') `
+                                    -and ($null -ne $x.assignedByGroup) }
+                        ))
+                    $directAssignedSku = [Linq.Enumerable]::FirstorDefault([Linq.Enumerable]::Where($_.licenseAssignmentStates, `
+                                [Func[Object, bool]] { param($x); return ($x.SkuId -eq $assignedLicense.SkuId) `
+                                    -and ($x.state -eq 'Active') `
+                                    -and ($null -eq $x.assignedByGroup) }
+                        ))
+    
+                    if ($groupAssignedSku) {
+                        $groupIds = ($assignedByGroups | Select-Object -ExpandProperty assignedByGroup) -join ', '
+                        $assignedLicense | Add-Member -NotePropertyName AppliedByGroups -NotePropertyValue $groupIds
+                    }
+    
+                    if ($assignedDirectly) {
+                        $assignedLicense | Add-Member -NotePropertyName AppliedDirectly -NotePropertyValue $true
+                    }
+    
+                    $licenseWithDisabledPlansKey = Get-LicenseAssignmentAsDictionaryKey($assignedLicense)
                     if ($iaLicenseGroupDictionary.ContainsKey($licenseWithDisabledPlansKey)) {
                         $currentCount = $iaLicenseGroupDictionary[$licenseWithDisabledPlansKey].UserCount
                         $iaLicenseGroupDictionary[$licenseWithDisabledPlansKey].UserCount = $currentCount + 1;
@@ -197,6 +242,20 @@ function Get-IAAzureADLicensesWithUsersAsList {
                         }
                         $skuPartNumber = Get-IAAzureADLicensesAsList | Where-Object { $_.SkuId -eq $AssignedLicense.SkuId } | Select-Object -ExpandProperty SkuPartNumber
                         $iaLicenseGroup.SkuPartNumber = $skuPartNumber
+                        if ($directAssignedSku) {
+                            $iaLicenseGroup.DirectAssignmentPath = $true
+                        }
+                        else {
+                            $iaLicenseGroup.DirectAssignmentPath = $false
+                        }
+                        if ($groupAssignedSku) {
+                            $groupAssignedSku | ForEach-Object {
+                                $groupName = ([Linq.Enumerable]::FirstOrDefault([Linq.Enumerable]::Where($groupsWithAssignedLicenses, `
+                                                [Func[Object, bool]] { param($x); return ($x.id -eq $_.assignedByGroup) }
+                                        ))  | Select-Object -ExpandProperty displayName)
+                                $iaLicenseGroup.InheritedAssignmentPaths.Add($groupName)
+                            }
+                        }
                         $iaLicenseGroup.Users.Add($_.UserPrincipalName)
                         $iaLicenseGroupDictionary.Add($licenseWithDisabledPlansKey, $iaLicenseGroup)
                     }
@@ -204,7 +263,7 @@ function Get-IAAzureADLicensesWithUsersAsList {
             } 
         }
         $licensesWithUsersAsList = $iaLicenseGroupDictionary.GetEnumerator() | ForEach-Object {
-            $_.Value | Select-Object LicenseName, SkuPartNumber, DisabledPlanCount, DisabledPlanNames, UserCount, Users
+            $_.Value | Select-Object LicenseName, SkuPartNumber, DisabledPlanCount, DisabledPlanNames, DirectAssignmentPath, InheritedAssignmentPaths, UserCount, Users
         }
         # CSV formatting - TODO: this will become a Parameter switch 
         # $licensesWithUsersAsList = $iaLicenseGroupDictionary.GetEnumerator() | ForEach-Object {

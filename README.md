@@ -15,6 +15,10 @@ Using this module you'll be able to answer questions like:
 
 Please note that the 'IA' module, as I'm calling it, is a work in progress.
 
+# Updates
+
+27-04-21 - Added license assignment paths for users via Graph
+
 ## Backlog
 
 - Custom MS Graph Calls :
