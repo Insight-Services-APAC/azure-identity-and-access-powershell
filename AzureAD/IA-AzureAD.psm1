@@ -83,7 +83,7 @@ function Send-MSGraphGetRequest {
 # Exported member functions
 
 function Experimental {
-    
+    Assert-AzureADConnected
     # Get the names and ids of groups that have assigned license plans
     $attributesToSelect = @(
         'id'
@@ -468,15 +468,16 @@ function Get-IAAzureADGroupsAsList {
     Returns a list of all groups in Azure AD.
     
     .DESCRIPTION
-    Returns the Display Name, Mail (if present), Type (Microsoft 365, Security or Distribution),
+    Returns the Display Name, Mail (if present), Type (Microsoft 365, Security, Mail-Enabled Security or Distribution),
     whether the group is synchronised from on-premise and a list of group owners (where defined in Azure)
+    It will also include whether the group is used to apply licensing.
     
     .EXAMPLE
     Get-IAAzureADGroups
 
     DisplayName           : Chris' Security Group
     Mail                  :
-    Type                  : Security
+    Type                  : Security, Licensing
     OnPremisesSyncEnabled : True
     Owners                :
 
@@ -498,17 +499,22 @@ function Get-IAAzureADGroupsAsList {
     )
     process {
         Assert-AzureADConnected
+
+        # Get the names and ids of groups that have assigned license plans
+        $attributesToSelect = @(
+            'id'
+            'assignedLicenses'
+        )
+        $selectData = $attributesToSelect -join ','
+        $graphUri = 'https://graph.microsoft.com/beta/groups?$select=' + $selectData
+        $licensingGroups = Send-MSGraphGetRequest $graphUri | Where-Object { $_.AssignedLicenses.Count -gt 0 }
+
         $iaGroupList = [List[IAGroup]]::new()
         $groups = Get-AzureADMSGroup -All $true
         $groups | ForEach-Object {
-            #  $_.OnPremisesSyncEnabled can return true or (false or null) - this is wrong 
-            # Sanitising the result
-            $OnPremisesSyncEnabled = $null
+            $onPremisesSyncEnabled = $false
             if ($_.OnPremisesSyncEnabled -eq $true) {
                 $onPremisesSyncEnabled = $true
-            }
-            else {
-                $onPremisesSyncEnabled = $false
             }
             [IAGroup] $iaGroup = [IAGroup]::new()
             $iaGroup.OnPremisesSyncEnabled = $onPremisesSyncEnabled
@@ -528,7 +534,10 @@ function Get-IAAzureADGroupsAsList {
                 $iaGroup.Type = "Distribution"
             }
             If ($_.GroupTypes -contains "DynamicMembership") {
-                $iaGroup.Type += " (Dynamic)"
+                $iaGroup.Type += ", Dynamic"
+            }
+            if ($licensingGroups.Id -contains $_.id) {
+                $iaGroup.Type += ", Licensing"
             }
             $iaGroupList.Add($iaGroup)
         }

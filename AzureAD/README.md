@@ -185,15 +185,16 @@ Returns a list of all groups in Azure AD. A flag denotes those synchronsied from
     Returns a list of all groups in Azure AD.
 
     .DESCRIPTION
-    Returns the Display Name, Mail (if present), Type (Microsoft 365, Security or Distribution),
+    Returns the Display Name, Mail (if present), Type (Microsoft 365, Security, Mail-Enabled Security or Distribution),
     whether the group is synchronised from on-premise and a list of group owners (where defined in Azure)
+    It will also include whether the group is used to apply licensing.
 
     .EXAMPLE
-    Get-IAAzureADGroupsAsList
+    Get-IAAzureADGroups
 
     DisplayName           : Chris' Security Group
     Mail                  :
-    Type                  : Security
+    Type                  : Security, Licensing
     OnPremisesSyncEnabled : True
     Owners                :
 
