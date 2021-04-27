@@ -67,7 +67,7 @@ Where a specific feature is not exposed by these modules a native Graph API call
 
 - [Users](#Users)
 
-  - [Get-IAAzureADUsersAsList](#Get-IAAzureADLicensesAsList)
+  - [Get-IAAzureADUsersAsList](#Get-IAAzureADUsersAsList)
   - [Get-IAAzureADGuestUserDomainsAsDictionary](#Get-IAAzureADGuestUserDomainsAsDictionary)
   - [Get-IAAzureADUserLastSignInAsDateTime](#Get-IAAzureADUserLastSignInAsDateTime)
 
