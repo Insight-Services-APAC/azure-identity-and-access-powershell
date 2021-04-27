@@ -51,11 +51,75 @@ Where a specific feature is not exposed by these modules a native Graph API call
 
 ## [Exchange Online](EXO/README.md)
 
-- Recipients
+### Recipients
 
-  - [Retrieve all (includes size where a mailbox)](/EXO/README.md#Get-IAEXORecipientsAsDictionary)
-  - [Retrieve all utilising the @tenant.onmicrosoft.com smtp address (proxyAddress)](/EXO/README.md#Get-IAEXORecipientsOnMicrosoftAsList)
+[Get-IAEXORecipientsOnMicrosoftAsList](/EXO/README.md#Get-IAEXORecipientsOnMicrosoftAsList)
 
+This will retrieve all Exchange Online recipients with an @tenant.onmicrosoft.com proxyAddress
+
+```powershell
+.EXAMPLE
+  $Results = Get-IAEXORecipientsOnMicrosoftAsList
+  $Results
+  ...
+  ExternalDirectoryObjectId : ...
+  Identity                  : Chris Dymond
+  Alias                     : Chris.Dymond
+  EmailAddresses            : {SPO:SIP:SMTP.mail.onmicrosoft.com...}
+  DisplayName               : Chris Dymond
+  Name                      : Chris Dymond
+  PrimarySmtpAddress        : Chris.Dymond@domain.com
+  RecipientType             : UserMailbox
+  RecipientTypeDetails      : UserMailbox
+  ExchangeVersion           : 0.20 (15.0.0.0)
+  DistinguishedName         : CN=...
+  OrganizationId            : ...
+  ...
+```
+
+[Get-IAEXORecipientsAsDictionary](/EXO/README.md#Get-IAEXORecipientsAsDictionary)
+
+This will retrieve all Exchange Online recipients and index them by their recipient recipientTypeDetail.
+
+It includes combined size (where applicable)
+
+```powershell
+  $Results = Get-IAEXORecipientsAsDictionary
+  $Results
+
+  Key                            Value
+  ---                            -----
+  UserMailbox                    IARecipients
+  RoomMailbox                    IARecipients
+  MailUsers                      IARecipients
+
+  $Results['UserMailbox']
+
+
+  CombinedSizeInGB Recipients
+  ---------------- ----------
+  725.87           {@{ExternalDirectoryObjectId=....
+
+
+  $Results['UserMailbox'].Recipients
+
+  ...
+  ExternalDirectoryObjectId :
+  Identity                  : Chris Dymond
+  Alias                     : Chris.Dymond
+  EmailAddresses            : {SPO:SIP:SMTP.mail.onmicrosoft.com...}
+  DisplayName               : Chris Dymond
+  Name                      : Chris Dymond
+  PrimarySmtpAddress        : Chris.Dymond@domain.com
+  RecipientType             : UserMailbox
+  RecipientTypeDetails      : UserMailbox
+  ExchangeVersion           : 0.20 (15.0.0.0)
+  DistinguishedName         : CN=
+  OrganizationId            :
+  TotalItemSize             : 1.243 GB (1,334,578,302 bytes)
+  TotalItemSizeInGB         : 1.24
+  ...
+```
 ## [Azure AD](AzureAD/README.md)
 
 - Licensing
