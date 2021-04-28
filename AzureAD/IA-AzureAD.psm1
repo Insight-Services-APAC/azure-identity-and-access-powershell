@@ -124,10 +124,15 @@ function Get-IAAzureADLicensesWithUsersAsList {
     Licenses are grouped by their enabled plan features and provide a list of affected users. 
     This is useful when determining how many license plan feature variations are in play.
     
-    Update - Added license assignment paths via Graph
+    ---Updates---
+
+    -Added license assignment paths via Graph
+
+    -Added optional parameter
+    -ExportToCsv $true
 
     .EXAMPLE
-    Get-IAAzureADLicensesWithUsersAsList
+    Get-IAAzureADLicensesWithUsersAsList -ExportToCsv $true
 
     LicenseName              : Microsoft 365 E3
     SkuPartNumber            : SPE_E3
@@ -157,7 +162,7 @@ function Get-IAAzureADLicensesWithUsersAsList {
             Mandatory = $false,
             ValueFromPipelineByPropertyName = $true,
             Position = 0)]
-        [bool] $OutputToCsv = $false
+        [bool] $ExportToCsv = $false
     )
     process {
         Assert-AzureADConnected
@@ -270,7 +275,7 @@ function Get-IAAzureADLicensesWithUsersAsList {
             $_.Value | Select-Object LicenseName, SkuPartNumber, DisabledPlanCount, DisabledPlanNames, DirectAssignmentPath, InheritedAssignmentPaths, UserCount, Users
         }
 
-        if ($OutputToCsv) {
+        if ($ExportToCsv) {
             $licensesWithUsersAsList | ForEach-Object {
                 $_ | Select-Object LicenseName, DisabledPlanCount, `
                 @{name = "DisabledPlans"; expression = { $_.DisabledPlanNames -join ', ' } }, `

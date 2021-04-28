@@ -53,7 +53,12 @@ Licenses are grouped by their enabled features.
     Licenses are grouped by their enabled plan features and provide a list of affected users.
     This is useful when determining how many license plan feature variations are in play.
 
-    Update - Added license assignment paths via Graph
+    ---Updates---
+
+    -Added license assignment paths via Graph
+
+    -Added optional parameter
+    -ExportToCsv $true
 
     .EXAMPLE
     Get-IAAzureADLicensesWithUsersAsList

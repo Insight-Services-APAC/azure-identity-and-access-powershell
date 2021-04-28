@@ -184,6 +184,13 @@ A referenced CSV includes the SkuId to Friendly Name conversion.
 
 This cmdlet returns all licensing as it applies to individual accounts. The results will be grouped according to plan features enabled and their assignment path (direct or via group).
 
+#### Updates
+
+- Added license assignment paths via Graph (Direct or inherited)
+
+- Added optional parameter
+  ` -ExportToCsv $true`
+
 ```powershell
 Get-IAAzureADLicensesWithUsersAsList
     ...
