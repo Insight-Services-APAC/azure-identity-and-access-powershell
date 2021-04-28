@@ -516,7 +516,7 @@ Export-ModuleMember -Function Get-IAAzureADUsersAsList
 class IAGroup {
     [string]$DisplayName
     [string]$Mail
-    [string]$Type
+    [List[string]]$Type = [List[string]]::new()
     [string]$OnPremisesSyncEnabled
     [string]$Owners
 }
@@ -581,22 +581,22 @@ function Get-IAAzureADGroupsAsList {
             $iaGroup.DisplayName = $_.DisplayName
             $iaGroup.Mail = $_.Mail
             If ($_.GroupTypes -contains "Unified") {
-                $iaGroup.Type = "Microsoft 365"
+                $iaGroup.Type.Add("Microsoft 365")
             }
             elseif ($_.SecurityEnabled -and $_.MailEnabled -eq $false  ) {
-                $iaGroup.Type = "Security"  
+                $iaGroup.Type.Add("Security")  
             }
             elseif ($_.SecurityEnabled -and $_.MailEnabled ) {
-                $iaGroup.Type = "Mail-Enabled Security"  
+                $iaGroup.Type.Add("Mail-Enabled Security")  
             }
             else {
-                $iaGroup.Type = "Distribution"
+                $iaGroup.Type.Add("Distribution")
             }
             If ($_.GroupTypes -contains "DynamicMembership") {
-                $iaGroup.Type += ", Dynamic"
+                $iaGroup.Type.Add("Dynamic")
             }
             if ($licensingGroups.Id -contains $_.id) {
-                $iaGroup.Type += ", Licensing"
+                $iaGroup.Type.Add("Licensing")
             }
             $iaGroupList.Add($iaGroup)
         }
