@@ -75,7 +75,9 @@ Where a specific feature is not exposed by these modules a native Graph API call
 
   - [Get-IAAzureADGroupsAsList](#Get-IAAzureADGroupsAsList)
 
-- Miscellaneous
+## Miscellaneous
+
+- [New-IAComplexPassword](#New-IAComplexPassword)
 
 # [Exchange Online](EXO/README.md)
 
@@ -286,4 +288,36 @@ This returns a list of all groups. It includes the type: Security, Mail-Enabled 
     Type                  : Microsoft 365
     OnPremisesSyncEnabled : False
     Owners                : chris.dymond@domain.com
+```
+
+# Miscellaneous
+
+## Password Generation
+
+### New-IAComplexPassword
+
+Generates a randomised complex password.
+
+Without parameters the method will generate a password of 16
+characters in length.
+
+There will be;
+
+- At least 1 lower case letter
+- At least 1 upper case letter
+- At least one number; and
+- 6 non-alpha characters.
+
+```powershell
+    New-IAComplexPassword
+
+    {V+y_[=)Ev_T+8fn
+```
+
+Length and the number of non-alpha characters may also be defined.
+
+```powershell
+    New-IAComplexPassword -PasswordLength 20 -NumNonAlphaChars 10
+
+    _*j}/QY!=5T/w^ZYD_y@
 ```
