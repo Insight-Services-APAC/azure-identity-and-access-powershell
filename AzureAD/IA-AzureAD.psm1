@@ -206,11 +206,11 @@ function Get-IAAzureADLicensesWithUsersAsList {
                         ))
     
                     if ($groupAssignedSku) {
-                        $groupIds = ($assignedByGroups | Select-Object -ExpandProperty assignedByGroup) -join ', '
-                        $assignedLicense | Add-Member -NotePropertyName AppliedByGroups -NotePropertyValue $groupIds
+                        $appliedGroups = $groupAssignedSku | Select-Object -ExpandProperty assignedByGroup
+                        $assignedLicense | Add-Member -NotePropertyName AppliedByGroups -NotePropertyValue $appliedGroups
                     }
     
-                    if ($assignedDirectly) {
+                    if ($directAssignedSku) {
                         $assignedLicense | Add-Member -NotePropertyName AppliedDirectly -NotePropertyValue $true
                     }
     
@@ -242,7 +242,7 @@ function Get-IAAzureADLicensesWithUsersAsList {
                         }
                         $skuPartNumber = Get-IAAzureADLicensesAsList | Where-Object { $_.SkuId -eq $AssignedLicense.SkuId } | Select-Object -ExpandProperty SkuPartNumber
                         $iaLicenseGroup.SkuPartNumber = $skuPartNumber
-                        if ($directAssignedSku) {
+                        if ($assignedLicense.AppliedDirectly) {
                             $iaLicenseGroup.DirectAssignmentPath = $true
                         }
                         else {
