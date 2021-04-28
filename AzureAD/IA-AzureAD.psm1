@@ -153,7 +153,11 @@ function Get-IAAzureADLicensesWithUsersAsList {
     [OutputType([List[IALicenseGroup]])]
     param
     (
-
+        [Parameter(
+            Mandatory = $false,
+            ValueFromPipelineByPropertyName = $true,
+            Position = 0)]
+        [bool] $OutputToCsv = $false
     )
     process {
         Assert-AzureADConnected
@@ -265,13 +269,17 @@ function Get-IAAzureADLicensesWithUsersAsList {
         $licensesWithUsersAsList = $iaLicenseGroupDictionary.GetEnumerator() | ForEach-Object {
             $_.Value | Select-Object LicenseName, SkuPartNumber, DisabledPlanCount, DisabledPlanNames, DirectAssignmentPath, InheritedAssignmentPaths, UserCount, Users
         }
-        # CSV formatting - TODO: this will become a Parameter switch 
-        # $licensesWithUsersAsList = $iaLicenseGroupDictionary.GetEnumerator() | ForEach-Object {
-        #     $_.Value | Select-Object LicenseName, DisabledPlanCount, `
-        #     @{name = "DisabledPlans"; expression = { $_.DisabledPlanNames -join ', ' } }, `
-        #         UserCount, `
-        #     @{name = "Users"; expression = { $_.Users -join ', ' } }
-        # }
+
+        if ($OutputToCsv) {
+            $licensesWithUsersAsList | ForEach-Object {
+                $_ | Select-Object LicenseName, DisabledPlanCount, `
+                @{name = "DisabledPlans"; expression = { $_.DisabledPlanNames -join ', ' } }, `
+                    DirectAssignmentPath, 
+                @{name = "InheritedAssignmentPaths"; expression = { $_.InheritedAssignmentPaths -join ', ' } }, `
+                    UserCount, `
+                @{name = "Users"; expression = { $_.Users -join ', ' } }
+            } | Export-Csv "Licenses assigned to users $($(Get-Date).ToLocalTime().ToString('yyyyMMddTHHmmss')).csv" -NoTypeInformation
+        }
         $licensesWithUsersAsList
     }
 }
