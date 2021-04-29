@@ -580,6 +580,7 @@ function Get-IAAzureADGroupsAsList {
 
     DisplayName           : Chris' Security Group
     Mail                  :
+    ProxyAddresses        : {}
     Type                  : {Security, Licensing}
     OnPremisesSyncEnabled : True
     Owners                : {}
@@ -587,6 +588,7 @@ function Get-IAAzureADGroupsAsList {
 
     DisplayName           : Chris' M365 Group
     Mail                  : ChrisGroup@domain.onmicrosoft.com
+    ProxyAddresses        : {}
     Type                  : {Microsoft 365}
     OnPremisesSyncEnabled : False
     Owners                : {chris.dymond@domain.com}

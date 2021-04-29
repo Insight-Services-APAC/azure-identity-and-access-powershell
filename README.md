@@ -90,20 +90,23 @@ This will retrieve all Exchange Online recipients with an @tenant.onmicrosoft.co
 ```powershell
   $Results = Get-IAEXORecipientsOnMicrosoftAsList
   $Results
-  ...
-  ExternalDirectoryObjectId : ...
-  Identity                  : Chris Dymond
-  Alias                     : Chris.Dymond
-  EmailAddresses            : {SPO:SIP:SMTP.mail.onmicrosoft.com...}
-  DisplayName               : Chris Dymond
-  Name                      : Chris Dymond
-  PrimarySmtpAddress        : Chris.Dymond@domain.com
-  RecipientType             : UserMailbox
-  RecipientTypeDetails      : UserMailbox
-  ExchangeVersion           : 0.20 (15.0.0.0)
-  DistinguishedName         : CN=...
-  OrganizationId            : ...
-  ...
+```
+
+```
+...
+ExternalDirectoryObjectId : ...
+Identity                  : Chris Dymond
+Alias                     : Chris.Dymond
+EmailAddresses            : {SPO:SIP:SMTP.mail.onmicrosoft.com...}
+DisplayName               : Chris Dymond
+Name                      : Chris Dymond
+PrimarySmtpAddress        : Chris.Dymond@domain.com
+RecipientType             : UserMailbox
+RecipientTypeDetails      : UserMailbox
+ExchangeVersion           : 0.20 (15.0.0.0)
+DistinguishedName         : CN=...
+OrganizationId            : ...
+...
 ```
 
 ### Get-IAEXORecipientsAsDictionary
@@ -115,39 +118,47 @@ It includes combined size (where applicable)
 ```powershell
   $Results = Get-IAEXORecipientsAsDictionary
   $Results
+```
 
+```
   Key                            Value
   ---                            -----
   UserMailbox                    IARecipients
   RoomMailbox                    IARecipients
   MailUsers                      IARecipients
+```
 
+```powershell
   $Results['UserMailbox']
+```
 
-
+```
   CombinedSizeInGB Recipients
   ---------------- ----------
   725.87           {@{ExternalDirectoryObjectId=....
+```
 
-
+```powershell
   $Results['UserMailbox'].Recipients
+```
 
-  ...
-  ExternalDirectoryObjectId :
-  Identity                  : Chris Dymond
-  Alias                     : Chris.Dymond
-  EmailAddresses            : {SPO:SIP:SMTP.mail.onmicrosoft.com...}
-  DisplayName               : Chris Dymond
-  Name                      : Chris Dymond
-  PrimarySmtpAddress        : Chris.Dymond@domain.com
-  RecipientType             : UserMailbox
-  RecipientTypeDetails      : UserMailbox
-  ExchangeVersion           : 0.20 (15.0.0.0)
-  DistinguishedName         : CN=
-  OrganizationId            :
-  TotalItemSize             : 1.243 GB (1,334,578,302 bytes)
-  TotalItemSizeInGB         : 1.24
-  ...
+```
+...
+ExternalDirectoryObjectId :
+Identity : Chris Dymond
+Alias : Chris.Dymond
+EmailAddresses : {SPO:SIP:SMTP.mail.onmicrosoft.com...}
+DisplayName : Chris Dymond
+Name : Chris Dymond
+PrimarySmtpAddress : Chris.Dymond@domain.com
+RecipientType : UserMailbox
+RecipientTypeDetails : UserMailbox
+ExchangeVersion : 0.20 (15.0.0.0)
+DistinguishedName : CN=
+OrganizationId :
+TotalItemSize : 1.243 GB (1,334,578,302 bytes)
+TotalItemSizeInGB : 1.24
+...
 ```
 
 # [Azure AD](AzureAD/README.md)
@@ -167,7 +178,9 @@ A referenced CSV includes the SkuId to Friendly Name conversion.
 
 ```powershell
     Get-IAAzureADLicensesAsList
+```
 
+```
     SkuId               : 05e9a617-0261-4cee-bb44-138d3ef5d965
     SkuPartNumber       : SPE_E3
     FriendlyLicenseName : Microsoft 365 E3
@@ -200,6 +213,9 @@ This cmdlet returns all licensing as it applies to individual accounts. The resu
 
 ```powershell
 Get-IAAzureADLicensesWithUsersAsList
+```
+
+```
     ...
     LicenseName              : Microsoft 365 E3
     SkuPartNumber            : SPE_E3
@@ -230,7 +246,9 @@ This function returns the same set of users but classifies them as either User, 
 
 ```powershell
     Get-IAAzureADUsersAsList
+```
 
+```
     UserPrincipalName     : chris.dymond@domain.com
     Enabled               : True
     Mail                  : chris.dymond@domain.com
@@ -252,7 +270,9 @@ Returns the count of Guest users by their domain.
 
 ```powershell
     Get-IAAzureADGuestUserDomainsAsDictionary
+```
 
+```
     Key                 Value
     ---                 -----
     chrisdymond.org         1
@@ -268,7 +288,9 @@ Returns the last successful time a user authenticated to Azure.
 
 ```powershell
     Get-IAAzureADUserLastSignInAsDateTime 'chris.dymond@domain.com'
+```
 
+```
     Sunday, 25 April 2021 3:34:34 PM
 ```
 
@@ -280,9 +302,12 @@ This returns a list of all groups. It includes the type: Security, Mail-Enabled 
 
 ```powershell
     Get-IAAzureADGroups
+```
 
+```
     DisplayName           : Chris' Security Group
     Mail                  :
+    ProxyAddresses        : {}
     Type                  : Security, Licensing
     OnPremisesSyncEnabled : True
     Owners                :
@@ -290,6 +315,7 @@ This returns a list of all groups. It includes the type: Security, Mail-Enabled 
 
     DisplayName           : Chris' M365 Group
     Mail                  : ChrisGroup@domain.onmicrosoft.com
+    ProxyAddresses        : {}
     Type                  : Microsoft 365
     OnPremisesSyncEnabled : False
     Owners                : chris.dymond@domain.com
@@ -315,7 +341,9 @@ There will be;
 
 ```powershell
     New-IAComplexPassword
+```
 
+```
     {V+y_[=)Ev_T+8fn
 ```
 
@@ -323,6 +351,8 @@ Length and the number of non-alpha characters may also be defined.
 
 ```powershell
     New-IAComplexPassword -PasswordLength 20 -NumNonAlphaChars 10
+```
 
+```
     _*j}/QY!=5T/w^ZYD_y@
 ```
