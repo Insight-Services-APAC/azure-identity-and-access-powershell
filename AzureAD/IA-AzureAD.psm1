@@ -297,7 +297,12 @@ function Get-IAAzureADLicensesAsList {
   
     .DESCRIPTION
     Shows the SkuId, SkuPartNumber, FriendlyLicenseName, Total, Assigned, Available, Suspended and Warning counts
-    
+
+    ---Updates---
+
+    -Added optional parameter
+    -ExportToCsv $true
+
     .EXAMPLE
     Get-IAAzureADLicensesAsList
 
@@ -319,13 +324,19 @@ function Get-IAAzureADLicensesAsList {
     Suspended           : 0
     Warning             : 0
 
+    Get-IAAzureADLicensesAsList -ExportToCsv $true
+
     .NOTES
     #>
     [CmdletBinding()]
     [OutputType([List[PSCustomObject]])]
     param
     (
-
+        [Parameter(
+            Mandatory = $false,
+            ValueFromPipelineByPropertyName = $true,
+            Position = 0)]
+        [bool] $ExportToCsv = $false
     )
     process {
         Assert-AzureADConnected
@@ -346,6 +357,9 @@ function Get-IAAzureADLicensesAsList {
             if ($friendlyLicenseNamesDictionary.ContainsKey($_.SkuId)) {
                 $_.FriendlyLicenseName = $friendlyLicenseNamesDictionary[$_.SkuID]
             }
+        }
+        if ($ExportToCsv) {
+            $licenses | Export-Csv "Licenses$($(Get-Date).ToLocalTime().ToString('yyyyMMddTHHmmss')).csv" -NoTypeInformation
         }
         $licenses
     }
@@ -446,6 +460,7 @@ class IAUser {
     [string]$UserPrincipalName
     [string]$Enabled
     [string]$Mail
+    [List[string]]$ProxyAddresses = [List[string]]::new()
     [string]$UserType
     [string]$RecipientType
     [string]$OnPremisesSyncEnabled = $true
@@ -489,7 +504,11 @@ function Get-IAAzureADUsersAsList {
     [OutputType([List[IAUser]])]
     param
     (
-
+        [Parameter(
+            Mandatory = $false,
+            ValueFromPipelineByPropertyName = $true,
+            Position = 0)]
+        [bool] $ExportToCsv = $false
     )
     process {
         Assert-AzureADConnected
@@ -512,15 +531,26 @@ function Get-IAAzureADUsersAsList {
                 ))
             if ($mailbox) {
                 $iaUser.RecipientType = $mailbox.RecipientTypeDetails
-                if ($iaUSer.RecipientType -ne 'RemoteUserMailbox' -or 'UserMailbox') {
-                    $iaUser.UserType = 'Exchange Resource'
+                $iaUser.ProxyAddresses = $mailbox.EmailAddresses
+                if ($iaUser.RecipientType -notmatch 'RemoteUserMailbox' -and $iaUser.RecipientType -notmatch 'UserMailbox') {
+                    $iaUser.UserType = 'Exchange'
                 }
             }
+            if ($null -eq $mailbox -and $_.UserType -eq 'Member') { $iaUser.UserType = 'User (No Mailbox)' }
             if ($_.DirSyncEnabled -ne $true) {
                 $iaUser.OnPremisesSyncEnabled = $false
             }
             $iaUsersList.Add($iaUser)
         }
+
+        if ($ExportToCsv) {
+            $iaUsersList | ForEach-Object {
+                $_ | Select-Object UserPrincipalName, Enabled, Mail, `
+                @{name = "ProxyAddresses"; expression = { $_.ProxyAddresses -join ', ' } }, `
+                    UserType, RecipientType, OnPremisesSyncEnabled
+            } | Export-Csv "Users$($(Get-Date).ToLocalTime().ToString('yyyyMMddTHHmmss')).csv" -NoTypeInformation
+        }
+
         $iaUsersList | Sort-Object DisplayName
     }
 }
@@ -531,7 +561,7 @@ class IAGroup {
     [string]$Mail
     [List[string]]$Type = [List[string]]::new()
     [string]$OnPremisesSyncEnabled
-    [string]$Owners
+    [List[string]]$Owners = [List[string]]::new()
 }
 
 function Get-IAAzureADGroupsAsList {
@@ -549,16 +579,16 @@ function Get-IAAzureADGroupsAsList {
 
     DisplayName           : Chris' Security Group
     Mail                  :
-    Type                  : Security, Licensing
+    Type                  : {Security, Licensing}
     OnPremisesSyncEnabled : True
-    Owners                :
+    Owners                : {}
 
 
     DisplayName           : Chris' M365 Group
     Mail                  : ChrisGroup@domain.onmicrosoft.com
-    Type                  : Microsoft 365
+    Type                  : {Microsoft 365}
     OnPremisesSyncEnabled : False
-    Owners                : chris.dymond@domain.com
+    Owners                : {chris.dymond@domain.com}
     
     .NOTES
     
@@ -567,7 +597,11 @@ function Get-IAAzureADGroupsAsList {
     [OutputType([List[IAGroup]])]
     param
     (
-
+        [Parameter(
+            Mandatory = $false,
+            ValueFromPipelineByPropertyName = $true,
+            Position = 0)]
+        [bool] $ExportToCsv = $false
     )
     process {
         Assert-AzureADConnected
@@ -590,7 +624,7 @@ function Get-IAAzureADGroupsAsList {
             }
             [IAGroup] $iaGroup = [IAGroup]::new()
             $iaGroup.OnPremisesSyncEnabled = $onPremisesSyncEnabled
-            $iaGroup.Owners = (Get-AzureADGroupOwner -ObjectId $_.Id -All $true | Select-Object -ExpandProperty UserPrincipalName) -join ', '
+            $iaGroup.Owners = Get-AzureADGroupOwner -ObjectId $_.Id -All $true | Select-Object -ExpandProperty UserPrincipalName
             $iaGroup.DisplayName = $_.DisplayName
             $iaGroup.Mail = $_.Mail
             If ($_.GroupTypes -contains "Unified") {
@@ -614,6 +648,14 @@ function Get-IAAzureADGroupsAsList {
             $iaGroupList.Add($iaGroup)
         }
         $iaGroupList | Sort-Object Displayname
+        if ($ExportToCsv) {
+            $iaGroupList | ForEach-Object {
+                $_ | Select-Object DisplayName, Mail, `
+                @{name = "Type"; expression = { $_.Type -join ', ' } }, `
+                    OnPremisesSyncEnabled, 
+                @{name = "Owners"; expression = { $_.Owners -join ', ' } }
+            } | Export-Csv "Groups$($(Get-Date).ToLocalTime().ToString('yyyyMMddTHHmmss')).csv" -NoTypeInformation
+        }
     }
 }
 Export-ModuleMember -Function Get-IAAzureADGroupsAsList

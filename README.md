@@ -160,6 +160,11 @@ This returns this list of licenses and their current allocation.
 
 A referenced CSV includes the SkuId to Friendly Name conversion.
 
+#### Updates
+
+- Added optional parameter
+  ` -ExportToCsv $true`
+
 ```powershell
     Get-IAAzureADLicensesAsList
 
