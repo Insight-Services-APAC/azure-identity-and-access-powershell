@@ -522,9 +522,9 @@ function Get-IAAzureADUsersAsList {
             $iaUser.Enabled = $_.AccountEnabled
             $iaUser.Mail = $_.Mail
             switch ($_.UserType) {
-                "Member" { $iaUser.UserType = "User"; break }
-                "Guest" { $iaUser.UserType = "B2B"; break }
-                Default { throw "Unhandled UserType" }
+                'Member' { $iaUser.UserType = 'User'; break }
+                'Guest' { $iaUser.UserType = 'B2B'; break }
+                Default { throw 'Unhandled UserType' }
             }
             $exoRecipient = [Linq.Enumerable]::FirstOrDefault([Linq.Enumerable]::Where($exoRecipients, `
                         [Func[Object, bool]] { param($x); return $x.ExternalDirectoryObjectId -eq $_.ObjectId }
@@ -534,7 +534,7 @@ function Get-IAAzureADUsersAsList {
                 $iaUser.RecipientType = $exoRecipient.RecipientTypeDetails
                 $iaUser.ProxyAddresses = $exoRecipient.EmailAddresses
                 if ($iaUser.RecipientType -notmatch 'RemoteUserMailbox' -and $iaUser.RecipientType -notmatch 'UserMailbox') {
-                    $iaUser.UserType = 'Exchange'
+                    if ($iaUser.UserType -ne 'B2B') { $iaUser.UserType = 'Exchange' }
                 }
             }
             if ($null -eq $exoRecipient -and $_.UserType -eq 'Member') { $iaUser.UserType = 'User (No Mailbox)' }
