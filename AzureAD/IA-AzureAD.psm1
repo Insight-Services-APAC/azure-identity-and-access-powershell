@@ -515,7 +515,7 @@ function Get-IAAzureADUsersAsList {
         Assert-ExchangeOnlineConnected
         $iaUsersList = [List[IAUser]]::new()
         $azureADUsers = Get-AzureADUser -All $True
-        $mailboxAccounts = Get-EXOMailbox -ResultSize Unlimited
+        $exoRecipients = Get-EXORecipient -ResultSize Unlimited -Filter "(RecipientType -eq 'MailUser') -or (RecipientType -eq 'UserMailbox')"
         $azureADUsers | ForEach-Object {
             $iaUser = [IAUser]::new()
             $iaUser.UserPrincipalName = $_.UserPrincipalName
@@ -526,17 +526,18 @@ function Get-IAAzureADUsersAsList {
                 "Guest" { $iaUser.UserType = "B2B"; break }
                 Default { throw "Unhandled UserType" }
             }
-            $mailbox = [Linq.Enumerable]::FirstOrDefault([Linq.Enumerable]::Where($mailboxAccounts, `
+            $exoRecipient = [Linq.Enumerable]::FirstOrDefault([Linq.Enumerable]::Where($exoRecipients, `
                         [Func[Object, bool]] { param($x); return $x.ExternalDirectoryObjectId -eq $_.ObjectId }
                 ))
-            if ($mailbox) {
-                $iaUser.RecipientType = $mailbox.RecipientTypeDetails
-                $iaUser.ProxyAddresses = $mailbox.EmailAddresses
+            if ($exoRecipient) {
+                $iaUser.Mail = $exoRecipient.PrimarySmtpAddress
+                $iaUser.RecipientType = $exoRecipient.RecipientTypeDetails
+                $iaUser.ProxyAddresses = $exoRecipient.EmailAddresses
                 if ($iaUser.RecipientType -notmatch 'RemoteUserMailbox' -and $iaUser.RecipientType -notmatch 'UserMailbox') {
                     $iaUser.UserType = 'Exchange'
                 }
             }
-            if ($null -eq $mailbox -and $_.UserType -eq 'Member') { $iaUser.UserType = 'User (No Mailbox)' }
+            if ($null -eq $exoRecipient -and $_.UserType -eq 'Member') { $iaUser.UserType = 'User (No Mailbox)' }
             if ($_.DirSyncEnabled -ne $true) {
                 $iaUser.OnPremisesSyncEnabled = $false
             }
