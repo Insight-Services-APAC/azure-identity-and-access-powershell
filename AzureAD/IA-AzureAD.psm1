@@ -559,6 +559,7 @@ Export-ModuleMember -Function Get-IAAzureADUsersAsList
 class IAGroup {
     [string]$DisplayName
     [string]$Mail
+    [List[string]]$ProxyAddresses = [List[String]]::new()
     [List[string]]$Type = [List[string]]::new()
     [string]$OnPremisesSyncEnabled
     [List[string]]$Owners = [List[string]]::new()
@@ -605,6 +606,25 @@ function Get-IAAzureADGroupsAsList {
     )
     process {
         Assert-AzureADConnected
+        Assert-ExchangeOnlineConnected
+
+        # Retrieve Group Recipients
+        $exoRecipientTypes = @(
+            'DynamicDistributionGroup',
+            'MailNonUniversalGroup',
+            'MailUniversalDistributionGroup',
+            'MailUniversalSecurityGroup')
+        $exoGroupsFilterTemplate = "(recipientType -eq 'value')"
+        $exoGroupsFilter = ''
+        for ($i = 0; $i -lt $exoRecipientTypes.Count; $i++) {
+            if ($i -eq 0) {
+                $exoGroupsFilter = $exoGroupsFilterTemplate.Replace('value', $exoRecipientTypes[$i])
+            }
+            else {
+                $exoGroupsFilter += " -or " + $exoGroupsFilterTemplate.Replace('value', $exoRecipientTypes[$i])
+            }
+        }
+        $exoGroupRecipients = Get-EXORecipient -ResultSize Unlimited -Filter $exoGroupsFilter
 
         # Get the names and ids of groups that have assigned license plans
         $attributesToSelect = @(
@@ -645,12 +665,22 @@ function Get-IAAzureADGroupsAsList {
             if ($licensingGroups.Id -contains $_.id) {
                 $iaGroup.Type.Add("Licensing")
             }
+
+            $exoGroupRecipient = [Linq.Enumerable]::FirstOrDefault([Linq.Enumerable]::Where($exoGroupRecipients, `
+                        [Func[Object, bool]] { param($x); return $x.ExternalDirectoryObjectId -eq $_.Id }
+                ))
+            if ($exoGroupRecipient) {
+                $iaGroup.Mail = $exoGroupRecipient.PrimarySmtpAddress
+                $exoGroupRecipient.EmailAddresses | ForEach-Object { $iaGroup.ProxyAddresses.Add($_) }
+            }    
+
             $iaGroupList.Add($iaGroup)
         }
         $iaGroupList | Sort-Object Displayname
         if ($ExportToCsv) {
             $iaGroupList | ForEach-Object {
                 $_ | Select-Object DisplayName, Mail, `
+                @{name = "ProxyAddresses"; expression = { $_.ProxyAddresses -join ', ' } }, `
                 @{name = "Type"; expression = { $_.Type -join ', ' } }, `
                     OnPremisesSyncEnabled, 
                 @{name = "Owners"; expression = { $_.Owners -join ', ' } }
