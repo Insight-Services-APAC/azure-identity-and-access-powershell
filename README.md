@@ -202,7 +202,7 @@ A referenced CSV includes the SkuId to Friendly Name conversion.
 
 ### Get-IAAzureADLicensesWithUsersAsList
 
-This cmdlet returns all licensing as it applies to individual accounts. The results will be grouped according to plan features enabled and their assignment path (direct or via group).
+This cmdlet returns all licensing as it applies to individual accounts. The results will be grouped according to plan features disabled and their assignment path (direct or inherited via group).
 
 #### Updates
 
@@ -252,6 +252,7 @@ This function returns the same set of users but classifies them as either User, 
     UserPrincipalName     : chris.dymond@domain.com
     Enabled               : True
     Mail                  : chris.dymond@domain.com
+    ProxyAddresses        : {}
     UserType              : User
     RecipientType         : UserMailbox
     OnPremisesSyncEnabled : True
@@ -259,6 +260,7 @@ This function returns the same set of users but classifies them as either User, 
     UserPrincipalName     : BoardRoom@chrisdymond.onmicrosoft.com
     Enabled               : True
     Mail                  : BoardRoom@domain.com
+    ProxyAddresses        : {}
     UserType              : Exchange
     RecipientType         : RoomMailbox
     OnPremisesSyncEnabled : False
