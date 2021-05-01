@@ -2,24 +2,20 @@
 
 Hello and welcome,
 
-I'm Chris, a Cloud Technical Specialist with Insight.
+I am Chris, a Cloud Technical Specialist at [Insight](https://au.insight.com/en_AU/home.html).
+I have written this repository to provide clear (scenario-based) cmdlets that both extend and demonstrate the Azure AD Preview and Exchange Online Management PowerShell modules.
 
-I have a keen interest in all things Azure but especially Identity and Access and how PowerShell can streamline tasks.
+Using these prebuilt functions, you will be able to answer common queries related to:
 
-I have written this repository with a view to provide scenario-based cmdlets that both extend and enhance the AzureADPreview and ExchangeOnlineManagement cmdlets.
+- Licensing
+- Exchange Online; and
+- Users and Groups
 
-Using my IA functions you'll be able to answer questions like the below:
-
-- What type of licensing is applied to my users?
-- When was the last sign-in of user 'x'?
-- What is the total size of all my Exchange Online mailboxes?
-- How many groups do I have and what kind are they?
-
-Please note that this 'IA' module, as I've called it, is a work in progress and will change regularly.
+Please note that this module is a work in progress and will change quite often.
 
 # Updates
 
-27-04-21 - Added license assignment paths for users via Graph
+27-04-21 - License assignment paths added for users
 
 ## Backlog
 
@@ -30,7 +26,7 @@ Author: Chris Dymond
 
 chris.dymond@insight.com
 
-https://www.linkedin.com/in/chris-dymond/
+[https://www.linkedin.com/in/chris-dymond](https://www.linkedin.com/in/chris-dymond)
 
 # Using the IA module
 
@@ -40,44 +36,44 @@ To use any of these cmdlets you must import this module.
 Import-Module .\IA.psd1
 ```
 
-As this library will make extensive use of both AzureADPreview and ExchangeManagementOnline it is a requirement that these two modules are also installed or already available.
+As this library will make extensive use of both AzureADPreview and ExchangeManagementOnline, it is a requirement that these two modules are installed.
 
 ```powershell
 Install-Module AzureADPreview
 Install-Module ExchangeOnlineManagement
 ```
 
-Where a specific feature is not exposed by these modules a native Graph API call may suffice and be included in the IA library.
+Where a specific feature is not exposed by these modules, a native Graph API call may suffice and be included in the IA module.
 
 # Contents
 
 ## Exchange Online
 
-- [Recipients](#Recipients)
+- [Recipients](#recipients)
 
-  - [Get-IAEXORecipientsOnMicrosoftAsList](#Get-IAEXORecipientsOnMicrosoftAsList)
-  - [Get-IAEXORecipientsAsDictionary](#Get-IAEXORecipientsAsDictionary)
+  - [Get-IAEXORecipientsOnMicrosoftAsList](#get-iaexorecipientsonmicrosoftaslist)
+  - [Get-IAEXORecipientsAsDictionary](#get-iaexorecipientsasdictionary)
 
 ## Azure AD
 
-- [Licensing](#Licensing)
+- [Licensing](#licensing)
 
-  - [Get-IAAzureADLicensesAsList](#Get-IAAzureADLicensesAsList)
-  - [Get-IAAzureADLicensesWithUsersAsList](#Get-IAAzureADLicensesWithUsersAsList)
+  - [Get-IAAzureADLicensesAsList](#get-iaazureadlicensesaslist)
+  - [Get-IAAzureADLicensesWithUsersAsList](#get-iaazureadlicenseswithusersaslist)
 
-- [Users](#Users)
+- [Users](#users)
 
-  - [Get-IAAzureADUsersAsList](#Get-IAAzureADUsersAsList)
-  - [Get-IAAzureADGuestUserDomainsAsDictionary](#Get-IAAzureADGuestUserDomainsAsDictionary)
-  - [Get-IAAzureADUserLastSignInAsDateTime](#Get-IAAzureADUserLastSignInAsDateTime)
+  - [Get-IAAzureADUsersAsList](#get-iaazureadusersaslist)
+  - [Get-IAAzureADGuestUserDomainsAsDictionary](#get-iaazureadguestuserdomainsasdictionary)
+  - [Get-IAAzureADUserLastSignInAsDateTime](#get-iaazureaduserlastsigninasdatetime)
 
-- [Groups](#Groups)
+- [Groups](#groups)
 
-  - [Get-IAAzureADGroupsAsList](#Get-IAAzureADGroupsAsList)
+  - [Get-IAAzureADGroupsAsList](#get-iaazureadgroupsaslist)
 
 ## Miscellaneous
 
-- [New-IAComplexPassword](#New-IAComplexPassword)
+- [New-IAComplexPassword](#new-iacomplexpassword)
 
 # [Exchange Online](EXO/README.md)
 
@@ -85,7 +81,7 @@ Where a specific feature is not exposed by these modules a native Graph API call
 
 ### Get-IAEXORecipientsOnMicrosoftAsList
 
-This will retrieve all Exchange Online recipients with an @tenant.onmicrosoft.com proxyAddress
+This will retrieve all Exchange Online recipients with the @tenant.onmicrosoft.com proxyAddress
 
 ```powershell
   $Results = Get-IAEXORecipientsOnMicrosoftAsList
