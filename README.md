@@ -16,6 +16,7 @@ Please note that this module is a work in progress and will change quite often.
 # Updates
 
 02-05-21 - Added App Service Principal extraction
+
 27-04-21 - Added license assignment paths
 
 ## Backlog
