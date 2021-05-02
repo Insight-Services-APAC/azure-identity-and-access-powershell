@@ -576,6 +576,9 @@ function Get-IAAzureADGroupsAsList {
     whether the group is synchronised from on-premise and a list of group owners (where defined in Azure)
     It will also include whether the group is used to apply licensing.
     
+    Optional parameter
+    -ExportToCsv:$true
+
     .EXAMPLE
     Get-IAAzureADGroups
 
@@ -692,3 +695,125 @@ function Get-IAAzureADGroupsAsList {
     }
 }
 Export-ModuleMember -Function Get-IAAzureADGroupsAsList
+
+class IAAppServicePrincipal {
+    [string]$ObjectId
+    [string]$AppId
+    [bool]$AccountEnabled
+    [string]$DisplayName
+    [string]$AuthenticationType
+    [string]$PublisherName
+    [string]$ServicePrincipalType
+    [List[string]]$AssignedUsers = [List[string]]::new()
+    [List[string]]$AssignedGroups = [List[string]]::new()
+    [List[string]]$AssignedPrincipalTypes = [List[string]]::new()
+    [List[string]]$ReplyUrls = [List[string]]::new()
+    [List[string]]$Tags = [List[String]]::new()
+    [List[string]]$IdentifierUris = [List[String]]::new()
+    [string]$SignInAudience
+    
+}
+
+function Get-IAAzureADAppServicePrincipals() {
+    <#
+    .SYNOPSIS
+    Returns a list of all Application Service Principals
+    
+    .DESCRIPTION
+    Returns a list of all application service principals within the tenant. This includes authentication type OAuth/SAML
+    as well assigned users/groups and other information where an app registration is available.
+
+    -ExportToCsv:$true (optional)
+
+    .EXAMPLE
+    Get-IAAzureADAppServicePrincipals
+
+    ...
+    ObjectId               : 
+    AppId                  : 
+    AccountEnabled         : True
+    DisplayName            : App Name
+    AuthenticationType     : SAML
+    PublisherName          : Tenant or Third Party Name
+    ServicePrincipalType   : Application
+    AssignedUsers          : {chris.dymond@domain.com...}
+    AssignedGroups         :
+    AssignedPrincipalTypes : {User}
+    ReplyUrls              : {https://myapp.domain.com/__login__/saml/}
+    Tags                   : {WindowsAzureActiveDirectoryIntegratedApp,
+                             WindowsAzureActiveDirectoryGalleryApplicationPrimaryV1}
+    IdentifierUris         : {https://myapp.domain.com/__login__/saml/}
+    SignInAudience         : AzureADMyOrg
+    ...
+
+    .NOTES
+    
+    #>
+    [CmdletBinding()]
+    [OutputType([List[IAUser]])]
+    param
+    (
+        [Parameter(
+            Mandatory = $false,
+            ValueFromPipelineByPropertyName = $true,
+            Position = 0)]
+        [bool] $ExportToCsv = $false
+    )
+    process {
+        Assert-AzureADConnected
+        $iaAppServicePrincipalList = [List[IAAppServicePrincipal]]::new()
+        Get-AzureADServicePrincipal -All $true | Where-Object { $_.Tags -contains "WindowsAzureActiveDirectoryIntegratedApp" } | ForEach-Object {
+            $iaAppServicePrincipal = [IAAppServicePrincipal]::new()
+            $iaAppServicePrincipal.ObjectId = $_.ObjectId
+            $iaAppServicePrincipal.AppId = $_.AppId
+            $iaAppServicePrincipal.AccountEnabled = $_.AccountEnabled
+            $iaAppServicePrincipal.ServicePrincipalType = $_.ServicePrincipalType
+            $iaAppServicePrincipal.DisplayName = $_.DisplayName
+            $iaAppServicePrincipal.PublisherName = $_.PublisherName
+            $iaAppServicePrincipal.ReplyUrls = $_.ReplyUrls
+            $iaAppServicePrincipal.Tags = $_.Tags
+
+            if ($_.Tags -contains 'WindowsAzureActiveDirectoryGalleryApplicationPrimaryV1' -or `
+                    $_.Tags -contains 'WindowsAzureActiveDirectoryCustomSingleSignOnApplication') {
+                $iaAppServicePrincipal.AuthenticationType = 'SAML'
+            }
+            else {
+                $iaAppServicePrincipal.AuthenticationType = 'OAuth'
+            }
+
+            $tenantApp = Get-AzureADApplication -Filter "AppId eq '$($_.AppId)'"
+            if ($tenantApp) {
+                $iaAppServicePrincipal.IdentifierUris = $tenantApp.IdentifierUris
+                $iaAppServicePrincipal.SignInAudience = $tenantApp.SignInAudience
+            }
+
+            $ServiceAppRoleAssignment = $_ | Get-AzureADServiceAppRoleAssignment 
+
+            $UserPrincipals = $ServiceAppRoleAssignment | Where-Object { $_.PrincipalType -eq 'User' } | Select-Object PrincipalId
+            $UserPrincipalNames = [List[string]]::new()
+            $UserPrincipals | ForEach-Object {
+                $UserPrincipalName = Get-AzureADUser -ObjectId $_.PrincipalId | Select-Object -ExpandProperty UserPrincipalName
+                $UserPrincipalNames.Add($UserPrincipalName)
+            }
+            $iaAppServicePrincipal.AssignedUsers = $UserPrincipalNames 
+            $iaAppServicePrincipal.AssignedGroups = ($ServiceAppRoleAssignment | Where-Object { $_.PrincipalType -ne 'User' } `
+                | Select-Object -Unique -ExpandProperty PrincipalDisplayName )
+            $iaAppServicePrincipal.AssignedPrincipalTypes = ($ServiceAppRoleAssignment | Select-Object -Unique -ExpandProperty PrincipalType)
+            $iaAppServicePrincipalList.Add($iaAppServicePrincipal)
+        }
+        if ($ExportToCsv) {
+            $iaAppServicePrincipalList | Sort-Object DisplayName | ForEach-Object {
+                $_ | Select-Object ObjectId, AppId, DisplayName, AccountEnabled, AuthenticationType, PublisherName, ServicePrincipalType, `
+                @{name = "AssignedUsers"; expression = { $_.AssignedUsers -join ', ' } }, `
+                @{name = "AssignedGroups"; expression = { $_.AssignedGroups -join ', ' } }, `
+                @{name = "AssignedPrincipalTypes"; expression = { $_.AssignedPrincipalTypes -join ', ' } }, `
+                @{name = "ReplyUrls"; expression = { $_.ReplyUrls -join ', ' } }, `
+                @{name = "IdentifierUris"; expression = { $_.IdentifierUris -join ', ' } }, `
+                    SignInAudience, `
+                @{name = "Tags"; expression = { $_.Tags -join ', ' } } 
+            } | Export-Csv "AppServicePrincipals$($(Get-Date).ToLocalTime().ToString('yyyyMMddTHHmmss')).csv" -NoTypeInformation
+        }
+        $iaAppServicePrincipalList
+    }
+}
+Export-ModuleMember -Function Get-IAAzureADAppServicePrincipals

@@ -2,8 +2,8 @@
 
 Hello and welcome,
 
-I am Chris, a Cloud Technical Specialist at [Insight](https://au.insight.com/en_AU/home.html).
-I have written this repository to provide clear (scenario-based) cmdlets that both extend and demonstrate the Azure AD Preview and Exchange Online Management PowerShell modules.
+I am a Cloud Technical Specialist at [Insight](https://au.insight.com/en_AU/home.html).
+I have written this repository to provide clear (scenario-based) cmdlets that both extend and demonstrate the use of the 'Azure AD Preview' and 'Exchange Online Management' modules.
 
 Using these prebuilt functions, you will be able to answer common queries related to:
 
@@ -15,7 +15,8 @@ Please note that this module is a work in progress and will change quite often.
 
 # Updates
 
-27-04-21 - License assignment paths added for users
+02-05-21 - Added App Service Principal extraction
+27-04-21 - Added license assignment paths
 
 ## Backlog
 
@@ -71,11 +72,15 @@ Where a specific feature is not exposed by these modules, a native Graph API cal
 
   - [Get-IAAzureADGroupsAsList](#get-iaazureadgroupsaslist)
 
+- [Service Principals](#service-principals)
+
+  - [Get-IAAzureADAppServicePrincipals](#get-iaazureadappserviceprincipals)
+
 ## Miscellaneous
 
 - [New-IAComplexPassword](#new-iacomplexpassword)
 
-# [Exchange Online](EXO/README.md)
+# Exchange Online
 
 ## Recipients
 
@@ -169,8 +174,8 @@ A referenced CSV includes the SkuId to Friendly Name conversion.
 
 #### Updates
 
-- Added optional parameter
-  ` -ExportToCsv $true`
+- Optional parameter
+  ` -ExportToCsv:$true`
 
 ```powershell
     Get-IAAzureADLicensesAsList
@@ -204,8 +209,8 @@ This cmdlet returns all licensing as it applies to individual accounts. The resu
 
 - Added license assignment paths via Graph (Direct or inherited)
 
-- Added optional parameter
-  ` -ExportToCsv $true`
+- Optional parameter
+  ` -ExportToCsv:$true`
 
 ```powershell
 Get-IAAzureADLicensesWithUsersAsList
@@ -239,6 +244,9 @@ Get-IAAzureADLicensesWithUsersAsList
 
 The standard Get-AzureADUsers cmdlet returns all accounts including shared mailboxes and resources.
 This function returns the same set of users but classifies them as either User, B2B or Exchange (short for Exchange Online).
+
+- Optional parameter
+  ` -ExportToCsv:$true`
 
 ```powershell
     Get-IAAzureADUsersAsList
@@ -298,6 +306,9 @@ Returns the last successful time a user authenticated to Azure.
 
 This returns a list of all groups. It includes the type: Security, Mail-Enabled Security, Distribution and Microsoft 365. It also includes whether the group is dynamic or is used for licensing.
 
+- Optional parameter
+  ` -ExportToCsv:$true`
+
 ```powershell
     Get-IAAzureADGroups
 ```
@@ -317,6 +328,37 @@ This returns a list of all groups. It includes the type: Security, Mail-Enabled 
     Type                  : Microsoft 365
     OnPremisesSyncEnabled : False
     Owners                : chris.dymond@domain.com
+```
+
+## Service Principals
+
+### Get-IAAzureADAppServicePrincipals
+
+Returns a list of all application service principals within the tenant. This includes an authentication type of OAuth/SAML (where available from the tags attribute) as well as user, group and meta data associated with the application.
+
+- Optional parameter
+  ` -ExportToCsv:$true`
+
+```powershell
+Get-IAAzureADAppServicePrincipals
+```
+
+```
+    ObjectId               :
+    AppId                  :
+    AccountEnabled         : True
+    DisplayName            : App Name
+    AuthenticationType     : SAML
+    PublisherName          : Tenant or Third Party Name
+    ServicePrincipalType   : Application
+    AssignedUsers          : {chris.dymond@domain.com...}
+    AssignedGroups         :
+    AssignedPrincipalTypes : {User}
+    ReplyUrls              : {https://myapp.domain.com/__login__/saml/}
+    Tags                   : {WindowsAzureActiveDirectoryIntegratedApp,
+                             WindowsAzureActiveDirectoryGalleryApplicationPrimaryV1}
+    IdentifierUris         : {https://myapp.domain.com/__login__/saml/}
+    SignInAudience         : AzureADMyOrg
 ```
 
 # Miscellaneous
