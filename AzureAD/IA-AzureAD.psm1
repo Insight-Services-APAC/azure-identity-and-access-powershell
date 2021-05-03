@@ -563,6 +563,8 @@ class IAGroup {
     [List[string]]$ProxyAddresses = [List[String]]::new()
     [List[string]]$Type = [List[string]]::new()
     [string]$OnPremisesSyncEnabled
+    [string]$EXORecipientType
+    [string]$EXORecipientTypeDetails
     [List[string]]$Owners = [List[string]]::new()
 }
 
@@ -677,7 +679,9 @@ function Get-IAAzureADGroupsAsList {
                 ))
             if ($exoGroupRecipient) {
                 $iaGroup.Mail = $exoGroupRecipient.PrimarySmtpAddress
-                $exoGroupRecipient.EmailAddresses | ForEach-Object { $iaGroup.ProxyAddresses.Add($_) }
+                $iaGroup.ProxyAddresses = $exoGroupRecipient.EmailAddresses
+                $iaGroup.EXORecipientType = $exoGroupRecipient.RecipientType
+                $iaGroup.EXORecipientTypeDetails = $exoGroupRecipient.RecipientTypeDetails
             }    
 
             $iaGroupList.Add($iaGroup)
