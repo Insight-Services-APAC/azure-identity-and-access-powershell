@@ -204,6 +204,7 @@ A referenced CSV includes the SkuId to Friendly Name conversion.
 This cmdlet returns all licensing as it applies to individual accounts. The results will be grouped according to plan features disabled and their assignment path (direct or inherited via group).
 
 Updates
+
 - Added license assignment paths via Graph (Direct or inherited)
 
 - Optional parameter `ExportToCsv:$true`
@@ -302,6 +303,7 @@ Returns the last successful time a user authenticated to Azure.
 This returns a list of all groups. It includes the type: Security, Mail-Enabled Security, Distribution and Microsoft 365. It also includes whether the group is dynamic or is used for licensing.
 
 - Optional parameter `ExportToCsv:$true`
+- Optional parameter `IncludeMembers:$true`
 
 ```powershell
     Get-IAAzureADGroups
@@ -316,9 +318,11 @@ This returns a list of all groups. It includes the type: Security, Mail-Enabled 
     EXORecipientTypeDetails :
     OnPremisesSyncEnabled   : True
     Owners                  : {}
+    Users                   : {}
+    NestedGroups            : {}
 
 
-    DisplayName             : Chris' M365 Group ie Team
+    DisplayName             : Chris' M365 Group
     Mail                    : ChrisGroup@domain.onmicrosoft.com
     ProxyAddresses          : {}
     Type                    : {Microsoft 365}
@@ -326,6 +330,8 @@ This returns a list of all groups. It includes the type: Security, Mail-Enabled 
     EXORecipientTypeDetails : GroupMailbox
     OnPremisesSyncEnabled   : False
     Owners                  : {chris.dymond@domain.com}
+    Users                   : {}
+    NestedGroups            : {}
 ```
 
 ### Service Principals

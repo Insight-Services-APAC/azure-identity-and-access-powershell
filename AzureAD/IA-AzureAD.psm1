@@ -569,6 +569,9 @@ class IAGroup {
     [string]$EXORecipientType
     [string]$EXORecipientTypeDetails
     [List[string]]$Owners = [List[string]]::new()
+    [List[string]]$Users = [List[string]]::new()
+    [List[string]]$NestedGroups = [List[string]]::new()
+
 }
 
 function Get-IAAzureADGroupsAsList {
@@ -583,6 +586,7 @@ function Get-IAAzureADGroupsAsList {
     
     Optional parameter
     -ExportToCsv:$true
+    -IncludeMembers:$true
 
     .EXAMPLE
     Get-IAAzureADGroups
@@ -595,6 +599,8 @@ function Get-IAAzureADGroupsAsList {
     EXORecipientTypeDetails :
     OnPremisesSyncEnabled   : True
     Owners                  : {}
+    Users                   : {}
+    NestedGroups            : {}
 
 
     DisplayName             : Chris' M365 Group
@@ -605,6 +611,8 @@ function Get-IAAzureADGroupsAsList {
     EXORecipientTypeDetails : GroupMailbox
     OnPremisesSyncEnabled   : False
     Owners                  : {chris.dymond@domain.com}
+    Users                   : {}
+    NestedGroups            : {}
     
     .NOTES
     
@@ -617,7 +625,12 @@ function Get-IAAzureADGroupsAsList {
             Mandatory = $false,
             ValueFromPipelineByPropertyName = $true,
             Position = 0)]
-        [bool] $ExportToCsv = $false
+        [bool] $ExportToCsv = $false,
+        [Parameter(
+            Mandatory = $false,
+            ValueFromPipelineByPropertyName = $true,
+            Position = 1)]
+        [bool] $IncludeMembers = $false
     )
     process {
         Assert-AzureADConnected
@@ -689,7 +702,15 @@ function Get-IAAzureADGroupsAsList {
                 $exoGroupRecipient.EmailAddresses | ForEach-Object { $iaGroup.ProxyAddresses.Add($_) }
                 $iaGroup.EXORecipientType = $exoGroupRecipient.RecipientType
                 $iaGroup.EXORecipientTypeDetails = $exoGroupRecipient.RecipientTypeDetails
-            }    
+            }
+            
+            if ($IncludeMembers) {
+                $members = Get-AzureADGroupMember -All:$true -ObjectId:$_.Id
+                $userMembers = $members | Where-Object { $_.ObjectType -ne 'Group' } | Select-Object -ExpandProperty UserPrincipalName
+                $groupMembers = $members | Where-Object { $_.ObjectType -eq 'Group' } | Select-Object -ExpandProperty ObjectId
+                $userMembers | ForEach-Object { $iaGroup.Users.Add($_) }
+                $groupMembers | ForEach-Object { $iaGroup.NestedGroups.Add($_) }
+            }
 
             $iaGroupList.Add($iaGroup)
         }
