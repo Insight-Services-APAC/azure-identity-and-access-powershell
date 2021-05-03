@@ -1,4 +1,4 @@
-# Overview
+# Azure Identity and Access PowerShell
 
 Hello and welcome,
 
@@ -13,7 +13,7 @@ Using these prebuilt functions, you will be able to answer common queries relate
 
 Please note that this module is a work in progress and will change quite often.
 
-# Updates
+## Updates
 
 02-05-21 - Added App Service Principal extraction
 
@@ -30,7 +30,7 @@ chris.dymond@insight.com
 
 [https://www.linkedin.com/in/chris-dymond](https://www.linkedin.com/in/chris-dymond)
 
-# Using the IA module
+## Using the IA module
 
 To use any of these cmdlets you must import this module.
 
@@ -47,16 +47,16 @@ Install-Module ExchangeOnlineManagement
 
 Where a specific feature is not exposed by these modules, a native Graph API call may suffice and be included in the IA module.
 
-# Contents
+## Contents
 
-## Exchange Online
+### Exchange Online
 
 - [Recipients](#recipients)
 
   - [Get-IAEXORecipientsOnMicrosoftAsList](#get-iaexorecipientsonmicrosoftaslist)
   - [Get-IAEXORecipientsAsDictionary](#get-iaexorecipientsasdictionary)
 
-## Azure AD
+### Azure AD
 
 - [Licensing](#licensing)
 
@@ -77,15 +77,15 @@ Where a specific feature is not exposed by these modules, a native Graph API cal
 
   - [Get-IAAzureADAppServicePrincipals](#get-iaazureadappserviceprincipals)
 
-## Miscellaneous
+### Miscellaneous
 
 - [New-IAComplexPassword](#new-iacomplexpassword)
 
-# Exchange Online
+## Exchange Online
 
-## Recipients
+### Recipients
 
-### Get-IAEXORecipientsOnMicrosoftAsList
+#### Get-IAEXORecipientsOnMicrosoftAsList
 
 This will retrieve all Exchange Online recipients with the @tenant.onmicrosoft.com proxyAddress
 
@@ -111,7 +111,7 @@ OrganizationId            : ...
 ...
 ```
 
-### Get-IAEXORecipientsAsDictionary
+#### Get-IAEXORecipientsAsDictionary
 
 This will retrieve all Exchange Online recipients and index them by their recipient recipientTypeDetail.
 
@@ -163,20 +163,17 @@ TotalItemSizeInGB : 1.24
 ...
 ```
 
-# [Azure AD](AzureAD/README.md)
+## Azure AD
 
-## Licensing
+### Licensing
 
-### Get-IAAzureADLicensesAsList
+#### Get-IAAzureADLicensesAsList
 
 This returns this list of licenses and their current allocation.
 
 A referenced CSV includes the SkuId to Friendly Name conversion.
 
-#### Updates
-
-- Optional parameter
-  ` -ExportToCsv:$true`
+- Optional parameter `ExportToCsv:$true`
 
 ```powershell
     Get-IAAzureADLicensesAsList
@@ -202,16 +199,14 @@ A referenced CSV includes the SkuId to Friendly Name conversion.
     Warning             : 0
 ```
 
-### Get-IAAzureADLicensesWithUsersAsList
+#### Get-IAAzureADLicensesWithUsersAsList
 
 This cmdlet returns all licensing as it applies to individual accounts. The results will be grouped according to plan features disabled and their assignment path (direct or inherited via group).
 
-#### Updates
-
+Updates
 - Added license assignment paths via Graph (Direct or inherited)
 
-- Optional parameter
-  ` -ExportToCsv:$true`
+- Optional parameter `ExportToCsv:$true`
 
 ```powershell
 Get-IAAzureADLicensesWithUsersAsList
@@ -239,15 +234,14 @@ Get-IAAzureADLicensesWithUsersAsList
     ...
 ```
 
-## Users
+### Users
 
-### Get-IAAzureADUsersAsList
+#### Get-IAAzureADUsersAsList
 
 The standard Get-AzureADUsers cmdlet returns all accounts including shared mailboxes and resources.
 This function returns the same set of users but classifies them as either User, B2B or Exchange (short for Exchange Online).
 
-- Optional parameter
-  ` -ExportToCsv:$true`
+- Optional parameter `ExportToCsv:$true`
 
 ```powershell
     Get-IAAzureADUsersAsList
@@ -271,7 +265,7 @@ This function returns the same set of users but classifies them as either User, 
     OnPremisesSyncEnabled   : False
 ```
 
-### Get-IAAzureADGuestUserDomainsAsDictionary
+#### Get-IAAzureADGuestUserDomainsAsDictionary
 
 Returns the count of Guest users by their domain.
 
@@ -287,7 +281,7 @@ Returns the count of Guest users by their domain.
     chris.net              13
 ```
 
-### Get-IAAzureADUserLastSignInAsDateTime
+#### Get-IAAzureADUserLastSignInAsDateTime
 
 Returns the last successful time a user authenticated to Azure.
 
@@ -301,14 +295,13 @@ Returns the last successful time a user authenticated to Azure.
     Sunday, 25 April 2021 3:34:34 PM
 ```
 
-## Groups
+### Groups
 
-### Get-IAAzureADGroupsAsList
+#### Get-IAAzureADGroupsAsList
 
 This returns a list of all groups. It includes the type: Security, Mail-Enabled Security, Distribution and Microsoft 365. It also includes whether the group is dynamic or is used for licensing.
 
-- Optional parameter
-  ` -ExportToCsv:$true`
+- Optional parameter `ExportToCsv:$true`
 
 ```powershell
     Get-IAAzureADGroups
@@ -335,14 +328,13 @@ This returns a list of all groups. It includes the type: Security, Mail-Enabled 
     Owners                  : {chris.dymond@domain.com}
 ```
 
-## Service Principals
+### Service Principals
 
-### Get-IAAzureADAppServicePrincipals
+#### Get-IAAzureADAppServicePrincipals
 
 Returns a list of all application service principals within the tenant. This includes an authentication type of OAuth/SAML (where available from the tags attribute) as well as user, group and meta data associated with the application.
 
-- Optional parameter
-  ` -ExportToCsv:$true`
+- Optional parameter `ExportToCsv:$true`
 
 ```powershell
 Get-IAAzureADAppServicePrincipals
@@ -366,11 +358,11 @@ Get-IAAzureADAppServicePrincipals
     SignInAudience         : AzureADMyOrg
 ```
 
-# Miscellaneous
+## Miscellaneous
 
-## Password Generation
+### Password Generation
 
-### New-IAComplexPassword
+#### New-IAComplexPassword
 
 Generates a randomised complex password.
 
