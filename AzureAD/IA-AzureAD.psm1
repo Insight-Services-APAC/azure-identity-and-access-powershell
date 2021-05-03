@@ -461,8 +461,9 @@ class IAUser {
     [string]$Enabled
     [string]$Mail
     [List[string]]$ProxyAddresses = [List[string]]::new()
-    [string]$UserType
-    [string]$RecipientType
+    [string]$Type
+    [string]$EXORecipientType
+    [string]$EXORecipientTypeDetails
     [string]$OnPremisesSyncEnabled = $true
 }
 
@@ -470,31 +471,32 @@ function Get-IAAzureADUsersAsList {
     <#
     .SYNOPSIS
     Provides a complete list of user accounts in the tenant.
-    The results are tagged with a UserType.
     
-    UserTypes include: User, B2B and Exchange objects.
+    Types include: User, B2B and Exchange objects with a UserMailbox.
     
     .DESCRIPTION
-    Users that are attached to another mailbox type (not a 'user' mailbox) have their UserType adjusted to 'Exchange'
+    Users that are attached to another mailbox type (not a UserMailbox) have their Type adjusted to 'Exchange'
     This makes a clear distinction from a person and a role or resource account in Exchange Online.
-    UPNs, Enabled state, Mail, UserType, MailboxType and a flag for on-premise synchronisation are included. 
+    UPNs, Enabled state, Mail, Type, MailboxType and a flag for on-premise synchronisation are included. 
     
     .EXAMPLE
     Get-IAAzureADUsersAsList
 
-    UserPrincipalName     : chris.dymond@domain.com
-    Enabled               : True
-    Mail                  : chris.dymond@domain.com
-    UserType              : User
-    RecipientType         : UserMailbox
-    OnPremisesSyncEnabled : True
+    UserPrincipalName       : chris.dymond@domain.com
+    Enabled                 : True
+    Mail                    : chris.dymond@domain.com
+    Type                    : User
+    EXORecipientType        : UserMailbox
+    EXORecipientTypeDetails : UserMailbox
+    OnPremisesSyncEnabled   : True
 
-    UserPrincipalName     : BoardRoom@chrisdymond.onmicrosoft.com
-    Enabled               : True
-    Mail                  : BoardRoom@domain.com
-    UserType              : Exchange
-    RecipientType         : RoomMailbox
-    OnPremisesSyncEnabled : False
+    UserPrincipalName       : BoardRoom@chrisdymond.onmicrosoft.com
+    Enabled                 : True
+    Mail                    : BoardRoom@domain.com
+    Type                    : Exchange
+    EXORecipientType        : UserMailbox
+    EXORecipientTypeDetails : RoomMailbox
+    OnPremisesSyncEnabled   : False
 
     
     .NOTES
@@ -522,22 +524,23 @@ function Get-IAAzureADUsersAsList {
             $iaUser.Enabled = $_.AccountEnabled
             $iaUser.Mail = $_.Mail
             switch ($_.UserType) {
-                'Member' { $iaUser.UserType = 'User'; break }
-                'Guest' { $iaUser.UserType = 'B2B'; break }
-                Default { throw 'Unhandled UserType' }
+                'Member' { $iaUser.Type = 'User'; break }
+                'Guest' { $iaUser.Type = 'B2B'; break }
+                Default { throw 'Unhandled Type' }
             }
             $exoRecipient = [Linq.Enumerable]::FirstOrDefault([Linq.Enumerable]::Where($exoRecipients, `
                         [Func[Object, bool]] { param($x); return $x.ExternalDirectoryObjectId -eq $_.ObjectId }
                 ))
             if ($exoRecipient) {
                 $iaUser.Mail = $exoRecipient.PrimarySmtpAddress
-                $iaUser.RecipientType = $exoRecipient.RecipientTypeDetails
-                $iaUser.ProxyAddresses = $exoRecipient.EmailAddresses
+                $iaUser.EXORecipientTypeDetails = $exoRecipient.RecipientTypeDetails
+                $iaUser.EXORecipientType = $exoRecipient.RecipientType
+                $exoRecipient.EmailAddresses | ForEach-Object { $iaUser.ProxyAddresses.Add($_) }
                 if ($iaUser.RecipientType -notmatch 'RemoteUserMailbox' -and $iaUser.RecipientType -notmatch 'UserMailbox') {
-                    if ($iaUser.UserType -ne 'B2B') { $iaUser.UserType = 'Exchange' }
+                    if ($iaUser.Type -ne 'B2B') { $iaUser.Type = 'Exchange' }
                 }
             }
-            if ($null -eq $exoRecipient -and $_.UserType -eq 'Member') { $iaUser.UserType = 'User (No Mailbox)' }
+            if ($null -eq $exoRecipient -and $_.Type -eq 'Member') { $iaUser.Type = 'User (No Mailbox)' }
             if ($_.DirSyncEnabled -ne $true) {
                 $iaUser.OnPremisesSyncEnabled = $false
             }
@@ -548,7 +551,7 @@ function Get-IAAzureADUsersAsList {
             $iaUsersList | ForEach-Object {
                 $_ | Select-Object UserPrincipalName, Enabled, Mail, `
                 @{name = "ProxyAddresses"; expression = { $_.ProxyAddresses -join ', ' } }, `
-                    UserType, RecipientType, OnPremisesSyncEnabled
+                    Type, RecipientType, OnPremisesSyncEnabled
             } | Export-Csv "Users$($(Get-Date).ToLocalTime().ToString('yyyyMMddTHHmmss')).csv" -NoTypeInformation
         }
 
@@ -584,20 +587,24 @@ function Get-IAAzureADGroupsAsList {
     .EXAMPLE
     Get-IAAzureADGroups
 
-    DisplayName           : Chris' Security Group
-    Mail                  :
-    ProxyAddresses        : {}
-    Type                  : {Security, Licensing}
-    OnPremisesSyncEnabled : True
-    Owners                : {}
+    DisplayName             : Chris' Security Group
+    Mail                    :
+    ProxyAddresses          : {}
+    Type                    : {Security, Licensing}
+    EXORecipientType        :
+    EXORecipientTypeDetails :
+    OnPremisesSyncEnabled   : True
+    Owners                  : {}
 
 
-    DisplayName           : Chris' M365 Group
-    Mail                  : ChrisGroup@domain.onmicrosoft.com
-    ProxyAddresses        : {}
-    Type                  : {Microsoft 365}
-    OnPremisesSyncEnabled : False
-    Owners                : {chris.dymond@domain.com}
+    DisplayName             : Chris' M365 Group
+    Mail                    : ChrisGroup@domain.onmicrosoft.com
+    ProxyAddresses          : {}
+    Type                    : {Microsoft 365}
+    EXORecipientType        : MailUniversalDistributionGroup
+    EXORecipientTypeDetails : GroupMailbox
+    OnPremisesSyncEnabled   : False
+    Owners                  : {chris.dymond@domain.com}
     
     .NOTES
     
@@ -679,7 +686,7 @@ function Get-IAAzureADGroupsAsList {
                 ))
             if ($exoGroupRecipient) {
                 $iaGroup.Mail = $exoGroupRecipient.PrimarySmtpAddress
-                $iaGroup.ProxyAddresses = $exoGroupRecipient.EmailAddresses
+                $exoGroupRecipient.EmailAddresses | ForEach-Object { $iaGroup.ProxyAddresses.Add($_) }
                 $iaGroup.EXORecipientType = $exoGroupRecipient.RecipientType
                 $iaGroup.EXORecipientTypeDetails = $exoGroupRecipient.RecipientTypeDetails
             }    

@@ -254,21 +254,21 @@ This function returns the same set of users but classifies them as either User, 
 ```
 
 ```
-    UserPrincipalName     : chris.dymond@domain.com
-    Enabled               : True
-    Mail                  : chris.dymond@domain.com
-    ProxyAddresses        : {}
-    UserType              : User
-    RecipientType         : UserMailbox
-    OnPremisesSyncEnabled : True
+    UserPrincipalName       : chris.dymond@domain.com
+    Enabled                 : True
+    Mail                    : chris.dymond@domain.com
+    Type                    : User
+    EXORecipientType        : UserMailbox
+    EXORecipientTypeDetails : UserMailbox
+    OnPremisesSyncEnabled   : True
 
-    UserPrincipalName     : BoardRoom@chrisdymond.onmicrosoft.com
-    Enabled               : True
-    Mail                  : BoardRoom@domain.com
-    ProxyAddresses        : {}
-    UserType              : Exchange
-    RecipientType         : RoomMailbox
-    OnPremisesSyncEnabled : False
+    UserPrincipalName       : BoardRoom@chrisdymond.onmicrosoft.com
+    Enabled                 : True
+    Mail                    : BoardRoom@domain.com
+    Type                    : Exchange
+    EXORecipientType        : UserMailbox
+    EXORecipientTypeDetails : RoomMailbox
+    OnPremisesSyncEnabled   : False
 ```
 
 ### Get-IAAzureADGuestUserDomainsAsDictionary
@@ -315,20 +315,24 @@ This returns a list of all groups. It includes the type: Security, Mail-Enabled 
 ```
 
 ```
-    DisplayName           : Chris' Security Group
-    Mail                  :
-    ProxyAddresses        : {}
-    Type                  : Security, Licensing
-    OnPremisesSyncEnabled : True
-    Owners                :
+    DisplayName             : Chris' Security Group
+    Mail                    :
+    ProxyAddresses          : {}
+    Type                    : {Security, Licensing}
+    EXORecipientType        :
+    EXORecipientTypeDetails :
+    OnPremisesSyncEnabled   : True
+    Owners                  : {}
 
 
-    DisplayName           : Chris' M365 Group
-    Mail                  : ChrisGroup@domain.onmicrosoft.com
-    ProxyAddresses        : {}
-    Type                  : Microsoft 365
-    OnPremisesSyncEnabled : False
-    Owners                : chris.dymond@domain.com
+    DisplayName             : Chris' M365 Group ie Team
+    Mail                    : ChrisGroup@domain.onmicrosoft.com
+    ProxyAddresses          : {}
+    Type                    : {Microsoft 365}
+    EXORecipientType        : MailUniversalDistributionGroup
+    EXORecipientTypeDetails : GroupMailbox
+    OnPremisesSyncEnabled   : False
+    Owners                  : {chris.dymond@domain.com}
 ```
 
 ## Service Principals
