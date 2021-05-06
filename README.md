@@ -22,7 +22,9 @@ Please note that this module is a work in progress and will change quite often.
 ## Backlog
 
 - Custom MS Graph Calls :
-  - Read MFA status, to achieve similiar results to MSOnline (msol) cmdlets
+  - Licensing groups 
+  - <strike>Read MFA status, to achieve similiar results to MSOnline (msol) cmdlets</strike>
+    -   Depends upon what calls are permitted by the token
 
 Author: Chris Dymond
 
