@@ -457,6 +457,7 @@ function Get-IAAzureADGuestUserDomainsAsDictionary {
 Export-ModuleMember -Function Get-IAAzureADGuestUserDomainsAsDictionary
 
 class IAUser {
+    [string]$ObjectId
     [string]$UserPrincipalName
     [string]$Enabled
     [string]$Mail
@@ -520,6 +521,7 @@ function Get-IAAzureADUsersAsList {
         $exoRecipients = Get-EXORecipient -ResultSize Unlimited -Filter "(RecipientType -eq 'MailUser') -or (RecipientType -eq 'UserMailbox')"
         $azureADUsers | ForEach-Object {
             $iaUser = [IAUser]::new()
+            $iaUser.ObjectId = $_.ObjectId
             $iaUser.UserPrincipalName = $_.UserPrincipalName
             $iaUser.Enabled = $_.AccountEnabled
             $iaUser.Mail = $_.Mail
@@ -536,7 +538,7 @@ function Get-IAAzureADUsersAsList {
                 $iaUser.EXORecipientTypeDetails = $exoRecipient.RecipientTypeDetails
                 $iaUser.EXORecipientType = $exoRecipient.RecipientType
                 $exoRecipient.EmailAddresses | ForEach-Object { $iaUser.ProxyAddresses.Add($_) }
-                if ($iaUser.RecipientType -notmatch 'RemoteUserMailbox' -and $iaUser.RecipientType -notmatch 'UserMailbox') {
+                if ($iaUser.EXORecipientTypeDetails -notmatch 'RemoteUserMailbox' -and $iaUser.EXORecipientTypeDetails -notmatch 'UserMailbox') {
                     if ($iaUser.Type -ne 'B2B') { $iaUser.Type = 'Exchange' }
                 }
             }
