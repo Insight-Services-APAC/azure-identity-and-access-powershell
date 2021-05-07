@@ -542,7 +542,7 @@ function Get-IAAzureADUsersAsList {
                     if ($iaUser.Type -ne 'B2B') { $iaUser.Type = 'Exchange' }
                 }
             }
-            if ($null -eq $exoRecipient -and $_.UserType -eq 'Member') { $iaUser.Type = 'User (No Mailbox)' }
+            if (($null -eq $exoRecipient -and $_.UserType -eq 'Member') -or $iaUser.EXORecipientTypeDetails -eq 'MailUser' ) { $iaUser.Type = 'User (No Mailbox)' }
             if ($_.DirSyncEnabled -ne $true) {
                 $iaUser.OnPremisesSyncEnabled = $false
             }
