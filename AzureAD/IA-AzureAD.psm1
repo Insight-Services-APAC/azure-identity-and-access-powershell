@@ -563,6 +563,7 @@ function Get-IAAzureADUsersAsList {
 Export-ModuleMember -Function Get-IAAzureADUsersAsList
 
 class IAGroup {
+    [string]$ObjectId
     [string]$DisplayName
     [string]$Mail
     [List[string]]$ProxyAddresses = [List[String]]::new()
@@ -673,6 +674,7 @@ function Get-IAAzureADGroupsAsList {
                 $onPremisesSyncEnabled = $true
             }
             [IAGroup] $iaGroup = [IAGroup]::new()
+            $iaGroup.ObjectId = $_.Id
             $iaGroup.OnPremisesSyncEnabled = $onPremisesSyncEnabled
             $iaGroup.Owners = Get-AzureADGroupOwner -ObjectId $_.Id -All $true | Select-Object -ExpandProperty UserPrincipalName
             $iaGroup.DisplayName = $_.DisplayName
