@@ -1,5 +1,7 @@
 Import-Module ..\IA.psd1 -Force
 
+$ErrorActionPreference = 'Stop'
+
 function ProcessResult {
     param
     (
@@ -15,9 +17,12 @@ function ProcessResult {
         [PSCustomObject] $ObjectList
     )
     process {
-        if ($null -eq $ObjectList) { return }
+        if ($null -eq $ObjectList) {
+            Write-Host -Background Magenta "`t> $FileName (0 objects) -- csv output skipped"
+            return 
+        }
         $FileName += " $($(Get-Date).ToLocalTime().ToString('yyyyMMddTHHmmss')).csv"
-        Write-Host -ForegroundColor Yellow "Exporting collection $Filename ($($ObjectList.Count) objects)..."
+        Write-Host -ForegroundColor Yellow "`t> $Filename ($($ObjectList.Count) objects)"
         $ObjectList | ForEach-Object {
             $_ | Select-Object ObjectId
         } | Export-Csv $FileName -NoTypeInformation
@@ -25,73 +30,79 @@ function ProcessResult {
     
 }
 
-Write-Host -ForegroundColor Yellow "Target: $(Get-AzureADCurrentSessionInfo | Select-Object -ExpandProperty TenantDomain)"
-Write-Host
+# AAD GRP DIST
+# AAD GRP M365
+# AAD GRP MESEC
+# AAD GRP SEC
+# AAD RES MBX
+# AAD USR MBX
+# AAD USR No MBX
+# AD GRP DIST
+# AD GRP MESEC
+# AD GRP SEC
+# AD RES MBX
+# AD USR MBX
+# AD USR No MBX
+
+
+# Pilot
 
 ## Azure Accounts ##
-Write-Host -ForegroundColor Yellow 'Getting all Azure AD accounts...' -NoNewline
+Write-Host -ForegroundColor Yellow "Fetching all Azure AD accounts`n"
 $Accounts = Get-IAAzureADUsersAsList
-Write-Host -ForegroundColor Yellow "completed ($($Accounts.Count) objects)"
-Write-Host
+$TenantDomain = Get-AzureADCurrentSessionInfo | Select-Object -ExpandProperty TenantDomain
+Write-Host -ForegroundColor Yellow "`t> $TenantDomain returned $($Accounts.Count) account objects`n"
 
-# On-Prem users with mailboxes
-$OnPremUsersWithMailboxes = Get-IAAzureADUsersAsList | Where-Object { $_.Type -eq 'User' -and $_.OnPremisesSyncEnabled -eq $true }
-ProcessResult "AD Users MBX" $OnPremUsersWithMailboxes
+$GuestCount = ($Accounts | Where-Object { $_.Type -eq 'B2B' }).Count
 
-# On-Prem users with no mailboxes
-$OnPremUsersWithNoMailboxes = Get-IAAzureADUsersAsList | Where-Object { $_.Type -eq 'User (No Mailbox)' -and $_.OnPremisesSyncEnabled -eq $true }
-ProcessResult "AD Users No MBX" $OnPremUsersWithNoMailboxes
+Write-Host -ForegroundColor Yellow "Exporting accounts (excluding $GuestCount B2B objects)`n"
 
-# Cloud users with mailboxes
-$CloudOnlyUsersWithMailboxes = Get-IAAzureADUsersAsList | Where-Object { $_.Type -eq 'User' -and $_.OnPremisesSyncEnabled -eq $false }
-ProcessResult "AAD Users MBX" $CloudOnlyUsersWithMailboxes
+$CloudOnlyExchangeResourceMailboxes = $Accounts  | Where-Object { $_.Type -eq 'Exchange' -and $_.OnPremisesSyncEnabled -eq $false }
+ProcessResult "AAD RES MBX" $CloudOnlyExchangeResourceMailboxes
 
-# Cloud users with no Mailbox
-$CloudOnlyUsersWithNoMailboxes = Get-IAAzureADUsersAsList | Where-Object { $_.Type -eq 'User (No Mailbox)' -and $_.OnPremisesSyncEnabled -eq $false }
-ProcessResult "AAD Users No MBX" $CloudOnlyUsersWithNoMailboxes
+$CloudOnlyUsersWithMailboxes = $Accounts  | Where-Object { $_.Type -eq 'User' -and $_.OnPremisesSyncEnabled -eq $false }
+ProcessResult "AAD USR MBX" $CloudOnlyUsersWithMailboxes
 
-# Cloud exchange resource mailboxes
-$CloudOnlyExchangeResourceMailboxes = Get-IAAzureADUsersAsList | Where-Object { $_.Type -eq 'Exchange' -and $_.OnPremisesSyncEnabled -eq $false }
-ProcessResult "AAD Resources MBX" $CloudOnlyExchangeResourceMailboxes
+$CloudOnlyUsersWithNoMailboxes = $Accounts  | Where-Object { $_.Type -eq 'User (No Mailbox)' -and $_.OnPremisesSyncEnabled -eq $false }
+ProcessResult "AAD USR No MBX" $CloudOnlyUsersWithNoMailboxes
 
-# On-Prem exchange resource mailboxes
-$OnPremExchangeResourceMailboxes = Get-IAAzureADUsersAsList | Where-Object { $_.Type -eq 'Exchange' -and $_.OnPremisesSyncEnabled -eq $true }
-ProcessResult "AD Resources MBX" $OnPremExchangeResourceMailboxes
+$OnPremExchangeResourceMailboxes = $Accounts | Where-Object { $_.Type -eq 'Exchange' -and $_.OnPremisesSyncEnabled -eq $true }
+ProcessResult "AD RES MBX" $OnPremExchangeResourceMailboxes
+
+$OnPremUsersWithMailboxes = $Accounts | Where-Object { $_.Type -eq 'User' -and $_.OnPremisesSyncEnabled -eq $true }
+ProcessResult "AD USR MBX" $OnPremUsersWithMailboxes
+
+$OnPremUsersWithNoMailboxes = $Accounts  | Where-Object { $_.Type -eq 'User (No Mailbox)' -and $_.OnPremisesSyncEnabled -eq $true }
+ProcessResult "AD USR No MBX" $OnPremUsersWithNoMailboxes
+
 
 ## Azure Groups ##
-Write-Host
-Write-Host -ForegroundColor Yellow 'Getting all Azure AD groups...' -NoNewline
+Write-Host -ForegroundColor Yellow "`nFetching all Azure AD groups`n"
 $AllGroups = Get-IAAzureADGroupsAsList
-Write-Host -ForegroundColor Yellow "completed ($($AllGroups.Count) objects)"
-Write-Host
+Write-Host -ForegroundColor Yellow "`t> $TenantDomain returned $($AllGroups.Count) group objects`n"
+
+Write-Host -ForegroundColor Yellow "Exporting groups`n"
+
+$CloudDistribution = $AllGroups | Where-Object { $_.Type -contains 'Distribution' -and $_.OnPremisesSyncEnabled -eq $false }
+ProcessResult "AAD GRP DIST" $CloudDistribution
 
 # Microsoft 365 Groups (cloud is implicit)
 $Microsoft365Groups = $AllGroups | Where-Object { $_.Type -contains 'Microsoft 365' }
-ProcessResult "AAD Groups M365" $Microsoft365Groups
+ProcessResult "AAD GRP M365" $Microsoft365Groups
 
-# Cloud Security
-$CloudSecurityGroups = $AllGroups | Where-Object { $_.Type -contains 'Security' -and $_.OnPremisesSyncEnabled -eq $false }
-ProcessResult "AAD Groups SEC" $CloudSecurityGroups
-
-# On-Prem Security
-$CloudSecurityGroups = $AllGroups | Where-Object { $_.Type -contains 'Security' -and $_.OnPremisesSyncEnabled -eq $true }
-ProcessResult "AD Groups SEC" $CloudSecurityGroups
-
-# Cloud Mail-Enabled Security
 $CloudMailEnabledSecurity = $AllGroups | Where-Object { $_.Type -contains 'Mail-Enabled Security' -and $_.OnPremisesSyncEnabled -eq $false }
-ProcessResult "AAD Groups MESEC" $CloudMailEnabledSecurity
+ProcessResult "AAD GRP MESEC" $CloudMailEnabledSecurity
 
-# On-Prem Mail-Enabled Security
-$CloudMailEnabledSecurity = $AllGroups | Where-Object { $_.Type -contains 'Mail-Enabled Security' -and $_.OnPremisesSyncEnabled -eq $true }
-ProcessResult "AD Groups MESEC" $CloudMailEnabledSecurity
+$CloudSecurityGroups = $AllGroups | Where-Object { $_.Type -contains 'Security' -and $_.OnPremisesSyncEnabled -eq $false }
+ProcessResult "AAD GRP SEC" $CloudSecurityGroups
 
-# Cloud Distribution
-$CloudDistribution = $AllGroups | Where-Object { $_.Type -contains 'Distribution' -and $_.OnPremisesSyncEnabled -eq $false }
-ProcessResult "AAD Groups DIST" $CloudDistribution
+$OnPremDistribution = $AllGroups | Where-Object { $_.Type -contains 'Distribution' -and $_.OnPremisesSyncEnabled -eq $true }
+ProcessResult "AD GRP DIST" $OnPremDistribution
 
-# On-Prem Distribution
-$CloudDistribution = $AllGroups | Where-Object { $_.Type -contains 'Distribution' -and $_.OnPremisesSyncEnabled -eq $true }
-ProcessResult "AD Groups DIST" $CloudDistribution
+$OnPremMailEnabledSecurity = $AllGroups | Where-Object { $_.Type -contains 'Mail-Enabled Security' -and $_.OnPremisesSyncEnabled -eq $true }
+ProcessResult "AD GRP MESEC" $OnPremMailEnabledSecurity
 
-Write-Host
-Write-Host -ForegroundColor Yellow "All tasks completed."
+$OnPremSecurityGroups = $AllGroups | Where-Object { $_.Type -contains 'Security' -and $_.OnPremisesSyncEnabled -eq $true }
+ProcessResult "AD GRP SEC" $OnPremSecurityGroups
+
+Write-Host -ForegroundColor Yellow "`nAll tasks have completed successfully."
