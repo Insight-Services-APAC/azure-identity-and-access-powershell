@@ -36,27 +36,27 @@ Write-Host
 
 # On-Prem users with mailboxes
 $OnPremUsersWithMailboxes = Get-IAAzureADUsersAsList | Where-Object { $_.Type -eq 'User' -and $_.OnPremisesSyncEnabled -eq $true }
-ProcessResult "1 OnPrem USR MBX" $OnPremUsersWithMailboxes
+ProcessResult "AD Users MBX" $OnPremUsersWithMailboxes
 
 # On-Prem users with no mailboxes
 $OnPremUsersWithNoMailboxes = Get-IAAzureADUsersAsList | Where-Object { $_.Type -eq 'User (No Mailbox)' -and $_.OnPremisesSyncEnabled -eq $true }
-ProcessResult "2 OnPrem USR No MBX" $OnPremUsersWithNoMailboxes
+ProcessResult "AD Users No MBX" $OnPremUsersWithNoMailboxes
 
 # Cloud users with mailboxes
 $CloudOnlyUsersWithMailboxes = Get-IAAzureADUsersAsList | Where-Object { $_.Type -eq 'User' -and $_.OnPremisesSyncEnabled -eq $false }
-ProcessResult "3 Cloud USR MBX" $CloudOnlyUsersWithMailboxes
+ProcessResult "AAD Users MBX" $CloudOnlyUsersWithMailboxes
 
 # Cloud users with no Mailbox
 $CloudOnlyUsersWithNoMailboxes = Get-IAAzureADUsersAsList | Where-Object { $_.Type -eq 'User (No Mailbox)' -and $_.OnPremisesSyncEnabled -eq $false }
-ProcessResult "4 Cloud USR No MBX" $CloudOnlyUsersWithNoMailboxes
+ProcessResult "AAD Users No MBX" $CloudOnlyUsersWithNoMailboxes
 
 # Cloud exchange resource mailboxes
 $CloudOnlyExchangeResourceMailboxes = Get-IAAzureADUsersAsList | Where-Object { $_.Type -eq 'Exchange' -and $_.OnPremisesSyncEnabled -eq $false }
-ProcessResult "5 Cloud RES MBX" $CloudOnlyExchangeResourceMailboxes
+ProcessResult "AAD Resources MBX" $CloudOnlyExchangeResourceMailboxes
 
 # On-Prem exchange resource mailboxes
 $OnPremExchangeResourceMailboxes = Get-IAAzureADUsersAsList | Where-Object { $_.Type -eq 'Exchange' -and $_.OnPremisesSyncEnabled -eq $true }
-ProcessResult "6 OnPrem RES MBX" $OnPremExchangeResourceMailboxes
+ProcessResult "AD Resources MBX" $OnPremExchangeResourceMailboxes
 
 ## Azure Groups ##
 Write-Host
@@ -67,31 +67,31 @@ Write-Host
 
 # Microsoft 365 Groups (cloud is implicit)
 $Microsoft365Groups = $AllGroups | Where-Object { $_.Type -contains 'Microsoft 365' }
-ProcessResult "7 Cloud GRP M365" $Microsoft365Groups
+ProcessResult "AAD Groups M365" $Microsoft365Groups
 
 # Cloud Security
 $CloudSecurityGroups = $AllGroups | Where-Object { $_.Type -contains 'Security' -and $_.OnPremisesSyncEnabled -eq $false }
-ProcessResult "8 Cloud GRP SEC" $CloudSecurityGroups
+ProcessResult "AAD Groups SEC" $CloudSecurityGroups
 
 # On-Prem Security
 $CloudSecurityGroups = $AllGroups | Where-Object { $_.Type -contains 'Security' -and $_.OnPremisesSyncEnabled -eq $true }
-ProcessResult "9 OnPrem GRP SEC" $CloudSecurityGroups
+ProcessResult "AD Groups SEC" $CloudSecurityGroups
 
 # Cloud Mail-Enabled Security
 $CloudMailEnabledSecurity = $AllGroups | Where-Object { $_.Type -contains 'Mail-Enabled Security' -and $_.OnPremisesSyncEnabled -eq $false }
-ProcessResult "10 Cloud GRP MESEC" $CloudMailEnabledSecurity
+ProcessResult "AAD Groups MESEC" $CloudMailEnabledSecurity
 
 # On-Prem Mail-Enabled Security
 $CloudMailEnabledSecurity = $AllGroups | Where-Object { $_.Type -contains 'Mail-Enabled Security' -and $_.OnPremisesSyncEnabled -eq $true }
-ProcessResult "11 OnPrem GRP MESEC" $CloudMailEnabledSecurity
+ProcessResult "AD Groups MESEC" $CloudMailEnabledSecurity
 
 # Cloud Distribution
 $CloudDistribution = $AllGroups | Where-Object { $_.Type -contains 'Distribution' -and $_.OnPremisesSyncEnabled -eq $false }
-ProcessResult "12 Cloud GRP DIST" $CloudDistribution
+ProcessResult "AAD Groups DIST" $CloudDistribution
 
 # On-Prem Distribution
 $CloudDistribution = $AllGroups | Where-Object { $_.Type -contains 'Distribution' -and $_.OnPremisesSyncEnabled -eq $true }
-ProcessResult "13 Onprem GRP DIST" $CloudDistribution
+ProcessResult "AD Groups DIST" $CloudDistribution
 
 Write-Host
 Write-Host -ForegroundColor Yellow "All tasks completed."
