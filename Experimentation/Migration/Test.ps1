@@ -1,4 +1,4 @@
-Import-Module ..\IA.psd1 -Force
+Import-Module ..\..\IA.psd1 -Force
 
 $ErrorActionPreference = 'Stop'
 
@@ -43,6 +43,9 @@ function ProcessResult {
 # AD RES MBX
 # AD USR MBX
 # AD USR No MBX
+
+# Remove existing CSVs in the current path
+Get-ChildItem *.csv | ForEach-Object { Remove-Item -Path $_.FullName }
 
 
 # Pilot
