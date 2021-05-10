@@ -1,3 +1,5 @@
+using namespace Microsoft.Open.Azure.AD.CommonLibrary
+
 $ErrorActionPreference = 'Stop'
 
 # Credit to https://www.michev.info/Blog/Post/2140/decode-jwt-access-and-id-tokens-via-powershell
@@ -38,6 +40,75 @@ function Parse-JWTtoken {
     
     return $tokobj
 }
+
+function Send-MSGraphPatchRequest {
+    [CmdletBinding()]
+    [OutputType([PSCustomObject])]
+    param
+    (
+        [Parameter(
+            Mandatory = $true,
+            ValueFromPipelineByPropertyName = $true,
+            Position = 0)]
+        [String] $GraphUrl,
+        [Parameter(
+            Mandatory = $true,
+            ValueFromPipelineByPropertyName = $true,
+            Position = 1)]
+        [PSCustomObject] $Body,
+        [Parameter(
+            Mandatory = $false,
+            ValueFromPipelineByPropertyName = $true,
+            Position = 2)]
+        [String] $AccessToken
+    )
+    process {
+        if ([string]::IsNullOrEmpty($AccessToken)) {
+            # Use the Azure AD PS provided token
+            Get-AzureADMSAdministrativeUnit -Top 1 | Out-Null # Just to ensure we have a graph.microsoft.com token (not just a graph.windows.net one)
+            $graphToken = [AzureSession]::TokenCache.ReadItems() | `
+                Where-Object { $_.Resource -eq 'https://graph.microsoft.com' } | Select-Object AccessToken
+            if ($null -eq $graphToken) {
+                throw "The Graph Access token is not available!"
+            }
+            $AccessToken = $graphToken.AccessToken
+        }
+     
+        $graphRequest = @{
+            Uri     = $GraphUrl
+            Headers = @{
+                'Authorization' = "Bearer $AccessToken"
+                'Content-type'  = 'application/json'
+            }
+            Body    = $Body
+            Method  = 'PATCH'
+        }
+
+        try {
+            Invoke-RestMethod @graphRequest
+        }
+        catch {
+            $respStream = $_.Exception.Response.GetResponseStream()
+            $reader = New-Object System.IO.StreamReader($respStream)
+            $errorBody = $reader.ReadToEnd() | ConvertFrom-Json | Select-Object -ExpandProperty error
+            $errorCode = $errorBody | Select-Object -ExpandProperty code
+            $errorMessage = $errorBody | Select-Object -ExpandProperty message
+            throw "$errorCode`n$errorMessage"
+        }
+        
+    }
+}
+
+
+$Body = @{
+    "onPremisesImmutableId" = ''
+} | ConvertTo-Json
+
+$graphUrl = 'https://graph.microsoft.com/beta/users/username@chrisdymond.onmicrosoft.com'
+
+Send-MSGraphPatchRequest $graphUrl $body
+
+return
 
 # 1b730954-1685-4b74-9bfd-dac224a7b894 [AzureAD PowerShell]
 # Agreement.Read.All
@@ -83,7 +154,7 @@ $accessToken = $authResult.result.AccessToken
 $decodedJwt = Parse-JWTtoken($accessToken)
 $decodedJwt
 
-Write-Host -ForegroundColor Yellow "---Permitted Scopes---`n"
+Write-Host -ForegroundColor Yellow "---Delegated Scopes---`n"
 
 Write-Host -ForegroundColor Yellow $decodedJwt.scp
 
