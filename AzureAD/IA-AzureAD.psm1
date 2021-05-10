@@ -47,7 +47,6 @@ function Get-LicenseAssignmentAsDictionaryKey([PSCustomObject] $AssignedLicense)
     $licenseIndexKey
 }
 
-
 function Send-MSGraphGetRequest {
     [CmdletBinding()]
     [OutputType([List[PSCustomObject]])]
@@ -74,17 +73,38 @@ function Send-MSGraphGetRequest {
             Method  = 'GET'
         }
         $resultList = [List[PSCustomObject]]::new()
-        $response = Invoke-RestMethod @graphRequest
-        $response.Value | ForEach-Object {
-            $resultList.Add($_)
-        }
-        while ($null -ne $response.'@odata.nextLink') {
-            $graphRequest.Uri = $response.'@odata.nextLink' 
+        try {
             $response = Invoke-RestMethod @graphRequest
-            $response.Value | ForEach-Object {
-                $resultList.Add($_)
-            }   
+            if ($response.Value.Count -eq 0) {
+                $resultList.Add($response)
+            }
+            else {
+                $response.Value | ForEach-Object {
+                    $resultList.Add($_)
+                }
+                while ($null -ne $response.'@odata.nextLink') {
+                    $graphRequest.Uri = $response.'@odata.nextLink' 
+                    $response = Invoke-RestMethod @graphRequest
+                    if ($response.Value.Count -eq 0) {
+                        $resultList.Add($response)
+                    }
+                    else {
+                        $response.Value | ForEach-Object {
+                            $resultList.Add($_)
+                        }   
+                    }
+                }
+            }
         }
+        catch {
+            $respStream = $_.Exception.Response.GetResponseStream()
+            $reader = New-Object System.IO.StreamReader($respStream)
+            $errorBody = $reader.ReadToEnd() | ConvertFrom-Json | Select-Object -ExpandProperty error
+            $errorCode = $errorBody | Select-Object -ExpandProperty code
+            $errorMessage = $errorBody | Select-Object -ExpandProperty message
+            throw "$errorCode`n$errorMessage"
+        }
+        
         $resultList
     }
 }
@@ -94,13 +114,14 @@ function Send-MSGraphGetRequest {
 function Experimental {
     Assert-AzureADConnected
     # Get the names and ids of groups that have assigned license plans
-    $attributesToSelect = @(
-        'id'
-        'licenseAssignmentStates'
-    )
-    $selectData = $attributesToSelect -join ','
-    $graphUri = 'https://graph.microsoft.com/beta/users?$select=' + $selectData
-    Send-MSGraphGetRequest $graphUri | Where-Object { $_.licenseAssignmentStates.Count -gt 0 }
+    # $attributesToSelect = @(
+    #     'id'
+    #     'displayName'
+    # )
+    # $selectData = $attributesToSelect -join ','
+    $graphUri = 'https://graph.microsoft.com/beta/users'
+    $result = Send-MSGraphGetRequest $graphUri
+    $result
 }
 Export-ModuleMember -Function Experimental
 
