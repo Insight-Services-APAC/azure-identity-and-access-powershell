@@ -13,7 +13,7 @@ function Assert-ExchangeOnlineConnected {
     $isConnected = (@($sessions) -like '@{State=Opened; Name=ExchangeOnlineInternalSession*').Count -gt 0
     If ($isConnected -ne $True) {
         Get-PSSession | Remove-PSSession
-        Connect-ExchangeOnline
+        Connect-ExchangeOnline | Out-Null
     }
 }
 
