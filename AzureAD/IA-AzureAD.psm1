@@ -486,7 +486,7 @@ class IAUser {
     [string]$Type
     [string]$EXORecipientType
     [string]$EXORecipientTypeDetails
-    [string]$OnPremisesSyncEnabled = $true
+    [string]$OnPremisesSyncEnabled
 }
 
 function Get-IAAzureADUsersAsList {
@@ -564,9 +564,12 @@ function Get-IAAzureADUsersAsList {
                 }
             }
             if (($null -eq $exoRecipient -and $_.UserType -eq 'Member') -or $iaUser.EXORecipientTypeDetails -eq 'MailUser' ) { $iaUser.Type = 'User (No Mailbox)' }
-            if ($_.DirSyncEnabled -ne $true) {
-                $iaUser.OnPremisesSyncEnabled = $false
+            
+            $onPremisesSyncEnabled = $false
+            if ($_.DirSyncEnabled -eq $true) {
+                $onPremisesSyncEnabled = $true
             }
+            $iaUser.OnPremisesSyncEnabled = $onPremisesSyncEnabled
             $iaUsersList.Add($iaUser)
         }
 
