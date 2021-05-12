@@ -1,0 +1,7 @@
+--- Transformation Expression Examples for AAD Connect ---
+
+- Altering DisplayName with fallback to the default flow -
+
+IIF(IsPresent([sn]),
+    IIF(IsPresent([givenName]), ([sn] & ", " & [givenName] & " suffix", IIF(IsNullOrEmpty([displayName]), [cn], [displayName])),
+        IIF(IsNullOrEmpty([displayName]), [cn], [displayName]))
