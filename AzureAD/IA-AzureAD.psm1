@@ -599,6 +599,7 @@ class IAGroup {
     [List[string]]$Users = [List[string]]::new()
     [List[string]]$NestedGroups = [List[string]]::new()
     [List[string]]$Contacts = [List[string]]::new()
+    [List[string]]$Devices = [List[string]]::new()
 
 }
 
@@ -735,12 +736,15 @@ function Get-IAAzureADGroupsAsList {
             
             if ($IncludeMembers) {
                 $members = Get-AzureADGroupMember -All:$true -ObjectId:$_.Id
-                $userMembers = $members | Where-Object { $_.ObjectType -ne 'Group' -and $_.ObjectType -ne 'Contact' } | Select-Object -ExpandProperty UserPrincipalName
+                $userMembers = $members | Where-Object { $_.ObjectType -ne 'Group' -and $_.ObjectType -ne 'Contact' `
+                        -and $_.ObjectType -ne 'Device' } | Select-Object -ExpandProperty UserPrincipalName
                 $groupMembers = $members | Where-Object { $_.ObjectType -eq 'Group' } | Select-Object -ExpandProperty ObjectId
                 $contactMembers = $members | Where-Object { $_.ObjectType -eq 'Contact' } | Select-Object -ExpandProperty ObjectId
+                $deviceMembers = $members | Where-Object { $_.ObjectType -eq 'Device' } | Select-Object -ExpandProperty ObjectId
                 $userMembers | ForEach-Object { $iaGroup.Users.Add($_) }
                 $groupMembers | ForEach-Object { $iaGroup.NestedGroups.Add($_) }
                 $contactMembers | ForEach-Object { $iaGroup.Contacts.Add($_) }
+                $deviceMembers | ForEach-Object { $iaGroup.Devices.Add($_) }
             }
 
             $iaGroupList.Add($iaGroup)
