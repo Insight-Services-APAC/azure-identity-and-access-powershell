@@ -114,3 +114,51 @@ $OnPremSecurityGroups = $AllGroups | Where-Object { $_.Type -contains 'Security'
 ProcessResult "AD GRP SEC" $OnPremSecurityGroups
 
 Write-Host -ForegroundColor Yellow "`nAll tasks have completed successfully."
+
+# Check for conflicts in target tenant.
+# Disconnect-AzureAD
+# Write-Host -ForegroundColor Yellow "Log in to the destination tenant"
+# $azureAD = Connect-AzureAD
+# $targetTenantAccounts = Get-IAAzureADUsersAsList
+# Write-Host -ForegroundColor Yellow "`t> $TenantDomain returned $($Accounts.Count) account objects`n"
+
+# Write-Host -ForegroundColor Yellow "Checking for *.onmicrosoft conflicts `n"
+# $CloudOnlyExchangeResourceMailboxes | ForEach-Object {
+#     $onMicrosoft = $_.UserPrincipalName.Split('@')[0] + '@' + $azureAD.TenantDomain
+    
+#     $conflict = $targetTenantAccounts | Where-Object ($_.Mail -eq $onMicrosoft -or $_.UserPrincipalName -eq $onMicrosoft)
+#     if ($conflict) {
+#         throw "error"
+#     }
+#     else {
+#         Write-Host -Foreground Yellow "`t> $OnMicrosoft -- Pass"
+#     }
+# }
+
+# function LookForConflicts {
+#     param
+#     (
+#         [Parameter(
+#             Mandatory = $false,
+#             ValueFromPipelineByPropertyName = $true,
+#             Position = 0)]
+#         [PSCustomObject] $SourceObjectList,
+#         [Parameter(
+#             Mandatory = $true,
+#             ValueFromPipelineByPropertyName = $true,
+#             Position = 1)]
+#         [PSCustomObject] $TargetObjectList,
+#         [Parameter(
+#             Mandatory = $true,
+#             ValueFromPipelineByPropertyName = $true,
+#             Position = 2)]
+#         [PSCustomObject] $TargetTenantDomain
+#     )
+#     process {
+#         if ($null -eq $SourceObjectList) {
+#             return 
+#         }
+        
+#     }
+    
+# }
