@@ -483,6 +483,7 @@ class IAUser {
     [string]$UserPrincipalName
     [string]$Enabled
     [string]$Mail
+    [string]$MailNickName
     [List[string]]$ProxyAddresses = [List[string]]::new()
     [string]$Type
     [string]$EXORecipientType
@@ -549,6 +550,7 @@ function Get-IAAzureADUsersAsList {
             $iaUser.UserPrincipalName = $_.UserPrincipalName
             $iaUser.Enabled = $_.AccountEnabled
             $iaUser.Mail = $_.Mail
+            $iaUser.MailNickName = $_.MailNickName
             switch ($_.UserType) {
                 'Member' { $iaUser.Type = 'User'; break }
                 'Guest' { $iaUser.Type = 'B2B'; break }
