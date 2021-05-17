@@ -21,11 +21,15 @@ function ProcessResult {
             Write-Host -Background Magenta "`t> $FileName (0 objects) -- csv output skipped"
             return 
         }
-        $FileName += " $($(Get-Date).ToLocalTime().ToString('yyyyMMddTHHmmss')).csv"
-        Write-Host -ForegroundColor Yellow "`t> $Filename ($($ObjectList.Count) objects)"
+        $FileName += " $($(Get-Date).ToLocalTime().ToString('yyyyMMddTHHmmss'))"
+        $OutFileName = $FileName + '.csv'
+        Write-Host -ForegroundColor Yellow "`t> $OutFileName ($($ObjectList.Count) objects)"
         $ObjectList | ForEach-Object {
             $_ | Select-Object ObjectId
-        } | Export-Csv $FileName -NoTypeInformation
+        } | Export-Csv $OutFileName -NoTypeInformation
+        # Backup the full object list
+        $OutFileName = $FileName + '.json'
+        $ObjectList | ConvertTo-Json | Out-File $OutFileName
     }
     
 }
@@ -46,6 +50,7 @@ function ProcessResult {
 
 # Remove existing CSVs in the current path
 Get-ChildItem *.csv | ForEach-Object { Remove-Item -Path $_.FullName }
+Get-ChildItem *.json | ForEach-Object { Remove-Item -Path $_.FullName }
 
 
 # Pilot

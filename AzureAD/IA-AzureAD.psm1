@@ -479,6 +479,7 @@ Export-ModuleMember -Function Get-IAAzureADGuestUserDomainsAsDictionary
 
 class IAUser {
     [string]$ObjectId
+    [string]$DisplayName
     [string]$UserPrincipalName
     [string]$Enabled
     [string]$Mail
@@ -487,6 +488,7 @@ class IAUser {
     [string]$EXORecipientType
     [string]$EXORecipientTypeDetails
     [string]$OnPremisesSyncEnabled
+    [string]$ImmutableId
 }
 
 function Get-IAAzureADUsersAsList {
@@ -543,6 +545,7 @@ function Get-IAAzureADUsersAsList {
         $azureADUsers | ForEach-Object {
             $iaUser = [IAUser]::new()
             $iaUser.ObjectId = $_.ObjectId
+            $iaUser.DisplayName = $_.Displayname
             $iaUser.UserPrincipalName = $_.UserPrincipalName
             $iaUser.Enabled = $_.AccountEnabled
             $iaUser.Mail = $_.Mail
@@ -568,6 +571,7 @@ function Get-IAAzureADUsersAsList {
             $onPremisesSyncEnabled = $false
             if ($_.DirSyncEnabled -eq $true) {
                 $onPremisesSyncEnabled = $true
+                $iaUser.ImmutableId = $_.ImmutableId
             }
             $iaUser.OnPremisesSyncEnabled = $onPremisesSyncEnabled
             $iaUsersList.Add($iaUser)
