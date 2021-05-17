@@ -38,7 +38,7 @@ if ($decision -eq 0) {
             Add-Content 'PlaceholderAccountMappings.txt' "$($_.ObjectId),$($createdUser.ObjectId)"
         }
         else {
-            Write-Host -ForegroundColor Green "`t> $($_.UserPrincipalName) already has a placeholder account."
+            Write-Host -ForegroundColor Yellow "`t> $($_.UserPrincipalName) already has a placeholder account."
         }
     }
 
