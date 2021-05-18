@@ -116,49 +116,74 @@ ProcessResult "AD GRP SEC" $OnPremSecurityGroups
 Write-Host -ForegroundColor Yellow "`nAll tasks have completed successfully."
 
 # Check for conflicts in target tenant.
-# Disconnect-AzureAD
-# Write-Host -ForegroundColor Yellow "Log in to the destination tenant"
-# $azureAD = Connect-AzureAD
-# $targetTenantAccounts = Get-IAAzureADUsersAsList
-# Write-Host -ForegroundColor Yellow "`t> $TenantDomain returned $($Accounts.Count) account objects`n"
+Disconnect-AzureAD
+Disconnect-ExchangeOnline
+Write-Host -ForegroundColor Yellow "Log in to the destination tenant"
+$azureAD = Connect-AzureAD
+Write-Host -ForegroundColor Yellow "Fetching all Azure AD accounts`n"
+$targetTenantAccounts = Get-IAAzureADUsersAsList
+Write-Host -ForegroundColor Yellow "`t> $($azureAD.TenantDomain) returned $($targetTenantAccounts.Count) account objects`n"
 
-# Write-Host -ForegroundColor Yellow "Checking for *.onmicrosoft conflicts `n"
-# $CloudOnlyExchangeResourceMailboxes | ForEach-Object {
-#     $onMicrosoft = $_.UserPrincipalName.Split('@')[0] + '@' + $azureAD.TenantDomain
-    
-#     $conflict = $targetTenantAccounts | Where-Object ($_.Mail -eq $onMicrosoft -or $_.UserPrincipalName -eq $onMicrosoft)
-#     if ($conflict) {
-#         throw "error"
-#     }
-#     else {
-#         Write-Host -Foreground Yellow "`t> $OnMicrosoft -- Pass"
-#     }
-# }
+function Assert-UniqueOnMicrosoftAddress {
+    param
+    (
+        [Parameter(
+            Mandatory = $false,
+            ValueFromPipelineByPropertyName = $true,
+            Position = 0)]
+        [PSCustomObject] $SourceObjectList,
+        [Parameter(
+            Mandatory = $true,
+            ValueFromPipelineByPropertyName = $true,
+            Position = 1)]
+        [PSCustomObject] $TargetObjectList,
+        [Parameter(
+            Mandatory = $true,
+            ValueFromPipelineByPropertyName = $true,
+            Position = 2)]
+        [PSCustomObject] $TargetTenantDomain
+    )
+    process {
+        if ($null -eq $SourceObjectList) {
+            return 
+        }
+        $SourceObjectList | ForEach-Object {
+            $generatedOnMicrosoftName = $_.UserPrincipalName.Split('@')[0] + '@' + $TargetTenantDomain
+            # Conflicts may arise on a account or group object
+            $conflict = $TargetObjectList | Where-Object { $_.Mail -eq $generatedOnMicrosoftName `
+                    -or $_.UserPrincipalName -eq $generatedOnMicrosoftName `
+                    -or $_.ProxyAddresses -contains $generatedOnMicrosoftName }
+            if ($conflict) {
+                Write-Host -BackgroundColor DarkRed "`t> $generatedOnMicrosoftName -- Conflict"
+            }
+            else {
+                Write-Host -Foreground Yellow "`t> $generatedOnMicrosoftName -- OK"
+            }
+        }
+    }
+}
+Assert-UniqueOnMicrosoftAddress -SourceObjectList $CloudOnlyExchangeResourceMailboxes `
+    -TargetObjectList $targetTenantAccounts `
+    -TargetTenantDomain $azureAD.TenantDomain
 
-# function LookForConflicts {
-#     param
-#     (
-#         [Parameter(
-#             Mandatory = $false,
-#             ValueFromPipelineByPropertyName = $true,
-#             Position = 0)]
-#         [PSCustomObject] $SourceObjectList,
-#         [Parameter(
-#             Mandatory = $true,
-#             ValueFromPipelineByPropertyName = $true,
-#             Position = 1)]
-#         [PSCustomObject] $TargetObjectList,
-#         [Parameter(
-#             Mandatory = $true,
-#             ValueFromPipelineByPropertyName = $true,
-#             Position = 2)]
-#         [PSCustomObject] $TargetTenantDomain
-#     )
-#     process {
-#         if ($null -eq $SourceObjectList) {
-#             return 
-#         }
-        
-#     }
+Assert-UniqueOnMicrosoftAddress -SourceObjectList $CloudOnlyUsersWithMailboxes `
+    -TargetObjectList $targetTenantAccounts `
+    -TargetTenantDomain $azureAD.TenantDomain
+
+Assert-UniqueOnMicrosoftAddress -SourceObjectList $CloudOnlyUsersWithNoMailboxes `
+    -TargetObjectList $targetTenantAccounts `
+    -TargetTenantDomain $azureAD.TenantDomain
     
-# }
+Assert-UniqueOnMicrosoftAddress -SourceObjectList $OnPremExchangeResourceMailboxes `
+    -TargetObjectList $targetTenantAccounts `
+    -TargetTenantDomain $azureAD.TenantDomain
+
+Assert-UniqueOnMicrosoftAddress -SourceObjectList $OnPremUsersWithMailboxes `
+    -TargetObjectList $targetTenantAccounts `
+    -TargetTenantDomain $azureAD.TenantDomain
+
+Assert-UniqueOnMicrosoftAddress -SourceObjectList $OnPremUsersWithNoMailboxes `
+    -TargetObjectList $targetTenantAccounts `
+    -TargetTenantDomain $azureAD.TenantDomain
+
+    
