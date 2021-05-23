@@ -19,6 +19,108 @@ function Assert-ExchangeOnlineConnected {
 
 # Exported member functions
 
+function Add-IAEXOEmailAddressToMailbox {
+    <#
+    .SYNOPSIS
+    Add email address to a mailbox
+    
+    .DESCRIPTION
+    
+    
+    .EXAMPLE
+    
+    .NOTES
+    
+    #>
+    [CmdletBinding()]
+    # [OutputType([List[PSCustomObject]])]
+    param
+    (
+        [Parameter(
+            Mandatory = $true,
+            ValueFromPipelineByPropertyName = $true,
+            Position = 0)]
+        [String] $MailNickName,
+        [Parameter(
+            Mandatory = $true,
+            ValueFromPipelineByPropertyName = $true,
+            Position = 1)]
+        [String] $EmailAddress
+    )
+    process {
+        Assert-ExchangeOnlineConnected
+        $emailAddresses = Get-EXOMailbox $MailNickName | Select-Object -ExpandProperty EmailAddresses
+
+        # Where a primary email address was provided, convert the current primary to a secondary
+        if (($EmailAddress -cmatch 'SMTP:').Count -gt 0) {
+            $emailAddresses = $emailAddresses -replace 'SMTP:', 'smtp:'
+        }
+        $emailAddresses += $EmailAddress
+        Set-Mailbox $MailNickName -EmailAddresses $emailAddresses
+    }
+}
+Export-ModuleMember -Function Add-IAEXOEmailAddressToMailbox 
+
+function Remove-IAEXOCustomEmailAddressesFromMailbox {
+    <#
+    .SYNOPSIS
+    Removes all custom domains from a mailbox recipient's email addresses
+    
+    .DESCRIPTION
+    
+    
+    .EXAMPLE
+    
+    .NOTES
+    
+    #>
+    [CmdletBinding()]
+    # [OutputType([List[PSCustomObject]])]
+    param
+    (
+        [Parameter(
+            Mandatory = $true,
+            ValueFromPipelineByPropertyName = $true,
+            Position = 0)]
+        [String] $MailNickName
+    )
+    process {
+        Assert-ExchangeOnlineConnected
+        $emailAddresses = Get-EXOMailbox $MailNickName | Select-Object -ExpandProperty EmailAddresses
+        $removedCustomEmailAddresses = @()
+        $emailAddressesToApply = @()
+        $emailAddresses | ForEach-Object {
+            if ($_ -match 'smtp:' -and $_ -notmatch 'onmicrosoft.com') {
+                $removedCustomEmailAddresses += $_ 
+            }
+            else {
+                $emailAddressesToApply += $_
+            }
+        }
+        if ($removedCustomEmailAddresses.Count -gt 0) {
+            # Always write the change to an output file
+            Write-Host -ForegroundColor Yellow "MailNickName: $MailNickName will have the following addresses removed :`n"
+            $removedCustomEmailAddresses | ForEach-Object {
+                Write-Host -BackgroundColor Magenta "`t$_"
+            }
+
+            if (($emailAddressesToApply -cmatch 'SMTP:').Count -eq 0) {
+                # If there's no longer a primary smtp, add the first smtp instance as primary
+                $firstSmtpInstance = (($emailAddressesToApply -cmatch 'smtp:')[0])
+                $emailAddressesToApply += $firstSmtpInstance -creplace 'smtp:', 'SMTP:'
+                $emailAddressesToApply = $emailAddressesToApply -cnotmatch $firstSmtpInstance # returns the list without the secondary address that was changed
+            }
+            Set-Mailbox $MailNickName -EmailAddresses $emailAddressesToApply
+            # Note that AzureAd will take a little while to sync this to its Email attribute (returning the account to @something.onmicrosoft.com)
+            Add-Content "$MailNickName removed custom addresses.txt" $removedCustomEmailAddresses
+        }
+        else {
+            Write-Host -ForegroundColor Yellow "$MailNickName has no custom domain email addresses to remove."
+        }
+    }
+}
+Export-ModuleMember -Function Remove-IAEXOCustomEmailAddressesFromMailbox
+
 function Get-IAEXORecipientsOnMicrosoftAsList {
     <#
     .SYNOPSIS
