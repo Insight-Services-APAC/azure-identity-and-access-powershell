@@ -22,13 +22,14 @@ function Assert-ExchangeOnlineConnected {
 function Add-IAEXOEmailAddressToMailbox {
     <#
     .SYNOPSIS
-    Add email address to a mailbox
+    Add email address to a mailbox (existing addresses preserved)
     
     .DESCRIPTION
     
     
     .EXAMPLE
     
+
     .NOTES
     
     #>
@@ -40,23 +41,26 @@ function Add-IAEXOEmailAddressToMailbox {
             Mandatory = $true,
             ValueFromPipelineByPropertyName = $true,
             Position = 0)]
-        [String] $MailNickName,
+        [String] $UserPrincipalName,
         [Parameter(
             Mandatory = $true,
             ValueFromPipelineByPropertyName = $true,
             Position = 1)]
-        [String] $EmailAddress
+        [List[String]] $EmailAddressList
     )
     process {
         Assert-ExchangeOnlineConnected
-        $emailAddresses = Get-EXOMailbox $MailNickName | Select-Object -ExpandProperty EmailAddresses
+        $exoMailbox = Get-EXOMailbox -UserPrincipalName $UserPrincipalName
+        $emailAddresses = $exoMailbox | Select-Object -ExpandProperty EmailAddresses
+        $identity = $exoMailbox | Select-Object -ExpandProperty Identity
 
         # Where a primary email address was provided, convert the current primary to a secondary
-        if (($EmailAddress -cmatch 'SMTP:').Count -gt 0) {
+        if (($EmailAddressList -cmatch 'SMTP:').Count -gt 0) {
             $emailAddresses = $emailAddresses -replace 'SMTP:', 'smtp:'
         }
-        $emailAddresses += $EmailAddress
-        Set-Mailbox $MailNickName -EmailAddresses $emailAddresses
+        $emailAddresses += $EmailAddressList
+        $emailAddresses = $emailAddresses | Select-Object -Unique
+        Set-Mailbox -Identity $identity -EmailAddresses $emailAddresses
     }
 }
 Export-ModuleMember -Function Add-IAEXOEmailAddressToMailbox 
@@ -82,11 +86,14 @@ function Remove-IAEXOCustomEmailAddressesFromMailbox {
             Mandatory = $true,
             ValueFromPipelineByPropertyName = $true,
             Position = 0)]
-        [String] $MailNickName
+        [String] $UserPrincipalName
     )
     process {
         Assert-ExchangeOnlineConnected
-        $emailAddresses = Get-EXOMailbox $MailNickName | Select-Object -ExpandProperty EmailAddresses
+
+        $exoMailbox = Get-EXOMailbox -UserPrincipalName $UserPrincipalName
+        $emailAddresses = $exoMailbox | Select-Object -ExpandProperty EmailAddresses
+        $identity = $exoMailbox | Select-Object -ExpandProperty Identity
         $removedCustomEmailAddresses = @()
         $emailAddressesToApply = @()
         $emailAddresses | ForEach-Object {
@@ -98,25 +105,17 @@ function Remove-IAEXOCustomEmailAddressesFromMailbox {
             }
         }
         if ($removedCustomEmailAddresses.Count -gt 0) {
-            # Always write the change to an output file
-            Write-Host -ForegroundColor Yellow "MailNickName: $MailNickName will have the following addresses removed :`n"
-            $removedCustomEmailAddresses | ForEach-Object {
-                Write-Host -BackgroundColor Magenta "`t$_"
-            }
-
             if (($emailAddressesToApply -cmatch 'SMTP:').Count -eq 0) {
                 # If there's no longer a primary smtp, add the first smtp instance as primary
                 $firstSmtpInstance = (($emailAddressesToApply -cmatch 'smtp:')[0])
                 $emailAddressesToApply += $firstSmtpInstance -creplace 'smtp:', 'SMTP:'
                 $emailAddressesToApply = $emailAddressesToApply -cnotmatch $firstSmtpInstance # returns the list without the secondary address that was changed
             }
-            Set-Mailbox $MailNickName -EmailAddresses $emailAddressesToApply
+            Set-Mailbox -Identity $identity -EmailAddresses $emailAddressesToApply
             # Note that AzureAd will take a little while to sync this to its Email attribute (returning the account to @something.onmicrosoft.com)
-            Add-Content "$MailNickName removed custom addresses.txt" $removedCustomEmailAddresses
+            Write-Output "$UserPrincipalName,$($removedCustomEmailAddresses -join ', ')"
         }
-        else {
-            Write-Host -ForegroundColor Yellow "$MailNickName has no custom domain email addresses to remove."
-        }
+        
     }
 }
 Export-ModuleMember -Function Remove-IAEXOCustomEmailAddressesFromMailbox
