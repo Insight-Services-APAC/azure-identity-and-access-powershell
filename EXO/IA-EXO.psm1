@@ -19,7 +19,85 @@ function Assert-ExchangeOnlineConnected {
 
 # Exported member functions
 
-class IAEXOAddedEmailAddressesResult {
+class IAEXOAddedEmailAddressesGroupResult {
+    [string]$Identity
+    [List[string]]$AddedEmailAddresses = [List[string]]::new()
+    [List[string]]$ResultingEmailAddresses = [List[string]]::new()
+}
+
+function Add-IAEXOEmailAddressesToGroup {
+    <#
+    .SYNOPSIS
+
+    
+    .DESCRIPTION
+    
+    
+    .EXAMPLE
+    
+
+    .NOTES
+    
+    #>
+    [CmdletBinding()]
+    [OutputType([IAEXOAddedEmailAddressesGroupResult])]
+    param
+    (
+        [Parameter(
+            Mandatory = $true,
+            ValueFromPipelineByPropertyName = $true,
+            Position = 0)]
+        [String] $Identity,
+        [Parameter(
+            Mandatory = $true,
+            ValueFromPipelineByPropertyName = $true,
+            Position = 1)]
+        [List[String]] $EmailAddressList
+    )
+    process {
+        Assert-ExchangeOnlineConnected
+        $exoGroup = Get-DistributionGroup -Identity $Identity
+        # A cast here prevents a single result turning into single string (which would mess up comparisons later)
+        [List[string]]$emailAddresses = $exoGroup | Select-Object -ExpandProperty EmailAddresses
+
+        $identity = $exoGroup | Select-Object -ExpandProperty Identity
+
+        $result = [IAEXOAddedEmailAddressesGroupResult]::new()
+        $result.Identity = $Identity
+
+        [List[string]]$newEmailAddresses = [List[string]]::new()
+        # Filter out addresses already there
+
+        $EmailAddressList | ForEach-Object {
+            if (($emailAddresses -cmatch $_).Count -eq 0) {
+                $newEmailAddresses.Add($_)
+            }
+        }
+
+        $result.AddedEmailAddresses = $newEmailAddresses
+
+        if ($newEmailAddresses.Count -gt 0) {
+            # Where a primary email address was provided, convert the current primary to a secondary
+            if (($newEmailAddresses -cmatch 'SMTP:').Count -gt 0) {
+                $emailAddresses = $emailAddresses -replace 'SMTP:', 'smtp:'
+                # if the new primary already matches an existing secondary address then remove it
+                $newPrimary = $newEmailAddresses -cmatch 'SMTP:'
+                $possibleSecondary = 'smtp:' + $newPrimary.Substring(5, $newPrimary[0].Length - 5)
+                $emailAddresses = $emailAddresses -cnotmatch $possibleSecondary
+            }
+            $emailAddresses += $newEmailAddresses
+            $emailAddresses = $emailAddresses | Select-Object -Unique
+            Set-DistributionGroup -Identity $Identity -EmailAddresses $emailAddresses
+        }
+        $result.ResultingEmailAddresses = $emailAddresses
+        $result
+    }
+}
+Export-ModuleMember -Function Add-IAEXOEmailAddressesToGroup 
+
+
+
+class IAEXOAddedEmailAddressesMailboxResult {
     [string]$UserPrincipalName
     [List[string]]$AddedEmailAddresses = [List[string]]::new()
     [List[string]]$ResultingEmailAddresses = [List[string]]::new()
@@ -64,10 +142,10 @@ function Add-IAEXOEmailAddressesToMailbox {
     process {
         Assert-ExchangeOnlineConnected
         $exoMailbox = Get-EXOMailbox -UserPrincipalName $UserPrincipalName
-        $emailAddresses = $exoMailbox | Select-Object -ExpandProperty EmailAddresses
+        [List[string]]$emailAddresses = $exoMailbox | Select-Object -ExpandProperty EmailAddresses
         $identity = $exoMailbox | Select-Object -ExpandProperty Identity
 
-        $result = [IAEXOAddedEmailAddressesResult]::new()
+        $result = [IAEXOAddedEmailAddressesMailboxResult]::new()
         $result.UserPrincipalName = $UserPrincipalName
 
         $newEmailAddresses = [List[String]]::new()
@@ -133,7 +211,7 @@ function Remove-IAEXOCustomEmailAddressesFromDistribution {
     process {
         Assert-ExchangeOnlineConnected
         $exoGroup = Get-DistributionGroup -Identity $Identity
-        $emailAddresses = $exoGroup | Select-Object -ExpandProperty EmailAddresses
+        [List[string]]$emailAddresses = $exoGroup | Select-Object -ExpandProperty EmailAddresses
         $identity = $exoGroup | Select-Object -ExpandProperty Identity
         $removedCustomEmailAddresses = @()
         $emailAddressesToApply = @()
@@ -205,7 +283,7 @@ function Remove-IAEXOCustomEmailAddressesFromMailbox {
         Assert-ExchangeOnlineConnected
 
         $exoMailbox = Get-EXOMailbox -UserPrincipalName $UserPrincipalName
-        $emailAddresses = $exoMailbox | Select-Object -ExpandProperty EmailAddresses
+        [List[string]]$emailAddresses = $exoMailbox | Select-Object -ExpandProperty EmailAddresses
         $identity = $exoMailbox | Select-Object -ExpandProperty Identity
         $removedCustomEmailAddresses = @()
         $emailAddressesToApply = @()
