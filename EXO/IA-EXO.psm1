@@ -65,6 +65,12 @@ function Add-IAEXOEmailAddressToMailbox {
 }
 Export-ModuleMember -Function Add-IAEXOEmailAddressToMailbox 
 
+class IAEXORemovedEmailAddressesResult {
+    [string]$UserPrincipalName
+    [List[string]]$RemovedCustomEmailAddresses = [List[string]]::new()
+    [List[string]]$ResultingEmailAddresses = [List[string]]::new()
+}
+
 function Remove-IAEXOCustomEmailAddressesFromMailbox {
     <#
     .SYNOPSIS
@@ -74,12 +80,18 @@ function Remove-IAEXOCustomEmailAddressesFromMailbox {
     
     
     .EXAMPLE
+
+    Remove-IAEXOCustomEmailAddressesFromMailbox -UserPrincipalName chris.dymond@tenant.onmicrosoft.com
+
+    UserPrincipalName                      RemovedCustomEmailAddresses  RemainingEmailAddresses
+    -----------------                      ---------------------------  -----------------------
+    chris.dymond@tenant.onmicrosoft.com    {chris.dymond@somewhere.com} {SMTP:chris.dymond@tenant.onmicrosoft.com, ...}
     
     .NOTES
     
     #>
     [CmdletBinding()]
-    # [OutputType([List[PSCustomObject]])]
+    [OutputType([IAEXORemovedEmailAddressesResult])]
     param
     (
         [Parameter(
@@ -104,18 +116,22 @@ function Remove-IAEXOCustomEmailAddressesFromMailbox {
                 $emailAddressesToApply += $_
             }
         }
+        $result = [IAEXORemovedEmailAddressesResult]::new()
+        $result.UserPrincipalName = $UserPrincipalName
+        $result.RemovedCustomEmailAddresses = $removedCustomEmailAddresses
+        $result.ResultingEmailAddresses = $emailAddressesToApply
         if ($removedCustomEmailAddresses.Count -gt 0) {
             if (($emailAddressesToApply -cmatch 'SMTP:').Count -eq 0) {
                 # If there's no longer a primary smtp, add the first smtp instance as primary
                 $firstSmtpInstance = (($emailAddressesToApply -cmatch 'smtp:')[0])
                 $emailAddressesToApply += $firstSmtpInstance -creplace 'smtp:', 'SMTP:'
                 $emailAddressesToApply = $emailAddressesToApply -cnotmatch $firstSmtpInstance # returns the list without the secondary address that was changed
+                $result.ResultingEmailAddresses = $emailAddressesToApply
             }
             Set-Mailbox -Identity $identity -EmailAddresses $emailAddressesToApply
             # Note that AzureAd will take a little while to sync this to its Email attribute (returning the account to @something.onmicrosoft.com)
-            Write-Output "$UserPrincipalName,$($removedCustomEmailAddresses -join ', ')"
         }
-        
+        $result
     }
 }
 Export-ModuleMember -Function Remove-IAEXOCustomEmailAddressesFromMailbox
