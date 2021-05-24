@@ -19,10 +19,16 @@ function Assert-ExchangeOnlineConnected {
 
 # Exported member functions
 
-function Add-IAEXOEmailAddressToMailbox {
+class IAEXOAddedEmailAddressesResult {
+    [string]$UserPrincipalName
+    [List[string]]$AddedEmailAddresses = [List[string]]::new()
+    [List[string]]$ResultingEmailAddresses = [List[string]]::new()
+}
+
+function Add-IAEXOEmailAddressesToMailbox {
     <#
     .SYNOPSIS
-    Add email address to a mailbox (existing addresses preserved)
+    Add email address to a mailbox (existing addresses are preserved)
     
     .DESCRIPTION
     
@@ -34,7 +40,7 @@ function Add-IAEXOEmailAddressToMailbox {
     
     #>
     [CmdletBinding()]
-    # [OutputType([List[PSCustomObject]])]
+    [OutputType([IAEXOAddedEmailAddressesResult])]
     param
     (
         [Parameter(
@@ -54,16 +60,26 @@ function Add-IAEXOEmailAddressToMailbox {
         $emailAddresses = $exoMailbox | Select-Object -ExpandProperty EmailAddresses
         $identity = $exoMailbox | Select-Object -ExpandProperty Identity
 
+        $result = [IAEXOAddedEmailAddressesResult]::new()
+        $result.UserPrincipalName = $UserPrincipalName
+
         # Where a primary email address was provided, convert the current primary to a secondary
         if (($EmailAddressList -cmatch 'SMTP:').Count -gt 0) {
             $emailAddresses = $emailAddresses -replace 'SMTP:', 'smtp:'
+            # if the new primary already matches an existing secondary address then remove it
+            $newPrimary = $EmailAddressList -cmatch 'SMTP:'
+            $possibleSecondary = 'smtp:' + $newPrimary.Substring(5, $newPrimary[0].Length - 5)
+            $emailAddresses = $emailAddresses -cnotmatch $possibleSecondary
         }
         $emailAddresses += $EmailAddressList
         $emailAddresses = $emailAddresses | Select-Object -Unique
         Set-Mailbox -Identity $identity -EmailAddresses $emailAddresses
+        $result.AddedEmailAddresses = $EmailAddressList
+        $result.ResultingEmailAddresses = $emailAddresses
+        $result
     }
 }
-Export-ModuleMember -Function Add-IAEXOEmailAddressToMailbox 
+Export-ModuleMember -Function Add-IAEXOEmailAddressesToMailbox 
 
 class IAEXORemovedEmailAddressesResult {
     [string]$UserPrincipalName
