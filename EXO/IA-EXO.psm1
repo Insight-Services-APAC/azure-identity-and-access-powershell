@@ -35,6 +35,13 @@ function Add-IAEXOEmailAddressesToMailbox {
     
     .EXAMPLE
     
+    Add-IAEXOEmailAddressesToMailbox -UserPrincipalName chris.dymond@tenant.onmicrosoft.com @('smtp:zz.test.cloud.user@somewhere.com', 'SMTP:zz.testclouduser@somewhere', ...)
+
+    # In this example the addresses are already there so they do not appear under 'AddedEmailAddresses'
+
+    UserPrincipalName                      AddedEmailAddresses ResultingEmailAddresses
+    -----------------                      ------------------- -----------------------
+    chris.dymond@tenant.onmicrosoft.com    {}                  {smtp:zz.test.cloud.user@somewhere.com', 'SMTP:zz.testclouduser@somewhere'}
 
     .NOTES
     
@@ -63,18 +70,29 @@ function Add-IAEXOEmailAddressesToMailbox {
         $result = [IAEXOAddedEmailAddressesResult]::new()
         $result.UserPrincipalName = $UserPrincipalName
 
-        # Where a primary email address was provided, convert the current primary to a secondary
-        if (($EmailAddressList -cmatch 'SMTP:').Count -gt 0) {
-            $emailAddresses = $emailAddresses -replace 'SMTP:', 'smtp:'
-            # if the new primary already matches an existing secondary address then remove it
-            $newPrimary = $EmailAddressList -cmatch 'SMTP:'
-            $possibleSecondary = 'smtp:' + $newPrimary.Substring(5, $newPrimary[0].Length - 5)
-            $emailAddresses = $emailAddresses -cnotmatch $possibleSecondary
+        $newEmailAddresses = [List[String]]::new()
+        # Filter out addresses already there
+        $EmailAddressList | ForEach-Object {
+            if (($emailAddresses -cmatch $_).Count -eq 0) {
+                $newEmailAddresses.Add($_)
+            }
         }
-        $emailAddresses += $EmailAddressList
-        $emailAddresses = $emailAddresses | Select-Object -Unique
-        Set-Mailbox -Identity $identity -EmailAddresses $emailAddresses
-        $result.AddedEmailAddresses = $EmailAddressList
+
+        $result.AddedEmailAddresses = $newEmailAddresses
+
+        if ($newEmailAddresses.Count -gt 0) {
+            # Where a primary email address was provided, convert the current primary to a secondary
+            if (($newEmailAddresses -cmatch 'SMTP:').Count -gt 0) {
+                $emailAddresses = $emailAddresses -replace 'SMTP:', 'smtp:'
+                # if the new primary already matches an existing secondary address then remove it
+                $newPrimary = $newEmailAddresses -cmatch 'SMTP:'
+                $possibleSecondary = 'smtp:' + $newPrimary.Substring(5, $newPrimary[0].Length - 5)
+                $emailAddresses = $emailAddresses -cnotmatch $possibleSecondary
+            }
+            $emailAddresses += $newEmailAddresses
+            $emailAddresses = $emailAddresses | Select-Object -Unique
+            Set-Mailbox -Identity $identity -EmailAddresses $emailAddresses
+        }
         $result.ResultingEmailAddresses = $emailAddresses
         $result
     }
