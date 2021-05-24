@@ -125,7 +125,7 @@ function Add-IAEXOEmailAddressesToMailbox {
     
     #>
     [CmdletBinding()]
-    [OutputType([IAEXOAddedEmailAddressesResult])]
+    [OutputType([IAEXOAddedEmailAddressesMailboxResult])]
     param
     (
         [Parameter(
