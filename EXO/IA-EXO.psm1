@@ -99,7 +99,74 @@ function Add-IAEXOEmailAddressesToMailbox {
 }
 Export-ModuleMember -Function Add-IAEXOEmailAddressesToMailbox 
 
-class IAEXORemovedEmailAddressesResult {
+class IAEXORemovedEmailAddressesOnDistributionResult {
+    [string]$Identity
+    [List[string]]$RemovedCustomEmailAddresses = [List[string]]::new()
+    [List[string]]$ResultingEmailAddresses = [List[string]]::new()
+}
+
+function Remove-IAEXOCustomEmailAddressesFromDistribution {
+    <#
+    .SYNOPSIS
+
+    
+    .DESCRIPTION
+    
+    
+    .EXAMPLE
+
+
+    
+    .NOTES
+    
+    #>
+    [CmdletBinding()]
+    [OutputType([IAEXORemovedEmailAddressesOnDistributionResult])]
+    param
+    (
+        [Parameter(
+            Mandatory = $true,
+            ValueFromPipelineByPropertyName = $true,
+            Position = 0)]
+        [String] $Identity
+    )
+    process {
+        Assert-ExchangeOnlineConnected
+        $exoGroup = Get-DistributionGroup -Identity $Identity
+        $emailAddresses = $exoGroup | Select-Object -ExpandProperty EmailAddresses
+        $identity = $exoGroup | Select-Object -ExpandProperty Identity
+        $removedCustomEmailAddresses = @()
+        $emailAddressesToApply = @()
+        $emailAddresses | ForEach-Object {
+            if ($_ -match 'smtp:' -and $_ -notmatch 'onmicrosoft.com') {
+                $removedCustomEmailAddresses += $_ 
+            }
+            else {
+                $emailAddressesToApply += $_
+            }
+        }
+        $result = [IAEXORemovedEmailAddressesOnDistributionResult]::new()
+        $result.Identity = $Identity
+        $result.RemovedCustomEmailAddresses = $removedCustomEmailAddresses
+        $result.ResultingEmailAddresses = $emailAddressesToApply
+        if ($removedCustomEmailAddresses.Count -gt 0) {
+            if (($emailAddressesToApply -cmatch 'SMTP:').Count -eq 0) {
+                # If there's no longer a primary smtp, add the first smtp instance as primary
+                $firstSmtpInstance = (($emailAddressesToApply -cmatch 'smtp:')[0])
+                $emailAddressesToApply += $firstSmtpInstance -creplace 'smtp:', 'SMTP:'
+                $emailAddressesToApply = $emailAddressesToApply -cnotmatch $firstSmtpInstance # returns the list without the secondary address that was changed
+                $result.ResultingEmailAddresses = $emailAddressesToApply
+            }
+            Set-DistributionGroup -Identity $identity -EmailAddresses $emailAddressesToApply
+            # Note that AzureAd will take a little while to sync this to its Email attribute (returning the account to @something.onmicrosoft.com)
+        }
+        $result
+    }
+}
+Export-ModuleMember -Function Remove-IAEXOCustomEmailAddressesFromDistribution
+
+
+class IAEXORemovedEmailAddressesOnMailboxResult {
     [string]$UserPrincipalName
     [List[string]]$RemovedCustomEmailAddresses = [List[string]]::new()
     [List[string]]$ResultingEmailAddresses = [List[string]]::new()
@@ -125,7 +192,7 @@ function Remove-IAEXOCustomEmailAddressesFromMailbox {
     
     #>
     [CmdletBinding()]
-    [OutputType([IAEXORemovedEmailAddressesResult])]
+    [OutputType([IAEXORemovedEmailAddressesOnMailboxResult])]
     param
     (
         [Parameter(
@@ -150,7 +217,7 @@ function Remove-IAEXOCustomEmailAddressesFromMailbox {
                 $emailAddressesToApply += $_
             }
         }
-        $result = [IAEXORemovedEmailAddressesResult]::new()
+        $result = [IAEXORemovedEmailAddressesOnMailboxResult]::new()
         $result.UserPrincipalName = $UserPrincipalName
         $result.RemovedCustomEmailAddresses = $removedCustomEmailAddresses
         $result.ResultingEmailAddresses = $emailAddressesToApply
