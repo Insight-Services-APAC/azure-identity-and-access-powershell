@@ -19,6 +19,69 @@ function Assert-ExchangeOnlineConnected {
 
 # Exported member functions
 
+# class IAEXORemovedSIPAddressesOnMailboxResult {
+#     [string]$UserPrincipalName
+#     [List[string]]$RemovedSIPAddresses = [List[string]]::new()
+#     [List[string]]$ResultingEmailAddresses = [List[string]]::new()
+# }
+
+# function Remove-IAEXOCustomSIPAddressesFromMailbox {
+#     <#
+#     .SYNOPSIS
+
+#     This function assumes the primary SMTP has already been reverted to @tenant.onmicrosoft.com
+    
+#     .DESCRIPTION
+    
+    
+#     .EXAMPLE
+
+
+    
+#     .NOTES
+    
+#     #>
+#     [CmdletBinding()]
+#     [OutputType([IAEXORemovedSIPAddressesOnMailboxResult])]
+#     param
+#     (
+#         [Parameter(
+#             Mandatory = $true,
+#             ValueFromPipelineByPropertyName = $true,
+#             Position = 0)]
+#         [String] $UserPrincipalName
+#     )
+#     process {
+#         Assert-ExchangeOnlineConnected
+#         $exoMailbox = Get-EXOMailbox -UserPrincipalName $UserPrincipalName
+#         [List[string]]$emailAddresses = $exoMailbox | Select-Object -ExpandProperty EmailAddresses
+#         $identity = $exoMailbox | Select-Object -ExpandProperty Identity
+#         $removedSIPAddresses = @()
+#         $emailAddressesToApply = @()
+#         $emailAddresses | ForEach-Object {
+#             if ($_ -match 'sip:' -and $_ -notmatch 'onmicrosoft.com') {
+#                 $removedSIPAddresses += $_ 
+#             }
+#             else {
+#                 $emailAddressesToApply += $_
+#             }
+#         }
+#         $result = [IAEXORemovedSIPAddressesOnMailboxResult]::new()
+#         $result.UserPrincipalName = $UserPrincipalName
+#         $result.RemovedSIPAddresses = $removedSIPAddresses
+#         $result.ResultingEmailAddresses = $emailAddressesToApply
+#         if ($removedCustomEmailAddresses.Count -gt 0) {
+
+#             $emailAddressesToApply += 'SIP:' + $exoMailbox.PrimarySmtpAddress
+            
+#             #Set-Mailbox -Identity $identity -EmailAddresses $emailAddressesToApply
+#             # Note that AzureAd will take a little while to sync this to its Email attribute (returning the account to @something.onmicrosoft.com)
+#         }
+#         $result
+#     }
+# }
+# Export-ModuleMember -Function Remove-IAEXOCustomSIPAddressesFromMailbox
+
 class IAEXOAddedEmailAddressesGroupResult {
     [string]$Identity
     [List[string]]$AddedEmailAddresses = [List[string]]::new()
